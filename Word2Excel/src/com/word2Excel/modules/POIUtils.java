@@ -36,9 +36,7 @@ import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.xmlbeans.XmlException;
 
-import com.word2Excel.bean.Bid;
 import com.word2Excel.bean.CustomFile;
-import com.word2Excel.bean.Project;
 import com.word2Excel.util.CommonUtils;
 import com.word2Excel.util.Constants;
 
