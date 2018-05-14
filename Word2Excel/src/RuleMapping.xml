@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<projects > 
+
+	<project class= "com.word2Excel.bean.Project" >		
+		<group key="01-招标文件" >
+				
+			<!-- 提取目录结构第2层目录名 -->
+			<th rule = "folder"  property='pDate' level="1" type="text" title="开标日期" ></th>
+			
+			<!-- 提取招标文件-招标文件（商务部分）中的招标编号 -->
+			<th rule = "content" property='pSequence' content-type='paragraph' type="text" title="招标编号" ></th>
+			
+			<!-- 提取招标文件-招标文件（商务部分）中的招标人栏目 -->
+			<th rule = "content"  property='pCorporation' content-type='table' type="text" title='项目公司' key='招 标 人'></th>
+			
+			<!-- 提取目录结构第3层目录名 -->
+			<th rule = "folder" property='pName' level="2" type="text" isImportant="ture" title="工程名+标段名+数量"></th>
+		</group>
+		
+		<group key="02-投标文件" class="com.word2Excel.bean.Bid">
+				<!-- 提取投标文件-*-价格中的投标人栏目下方表格-价格汇总表   -->
+				<th rule = "content" type='text' title='投标报价（万元）' key="投标总价">
+				</th>
+				<!-- 提取投标文件-*-价格中的投标人栏目 -->
+				<th rule = "content" type="text" title="投标人名称" key="投标人" sukey="有限公司"></th>
+				
+				<!-- 提取投标文件-*-价格中的投标人栏目下方表格投标总价 -->
+				<th rule = "content" type="text" title="投标风机型号" key="投标机型">	
+				</th>
+				
+				
+				<!-- 提取投标文件-02-投标文件-设备技术性能要求 -->
+				<th rule = "content" type="text" title="机型形式" key="机型为">
+					
+					<!-- <keyword>机型为******</keyword> -->
+					
+				</th>
+				
+				<!--提取投标文件-*-技术中的轮毂高度为特征词  -->
+				<th rule = "content" type="text" title="轮毂高度（m）" key="轮毂"></th>
+				
+				<!--提取投标文件-*-价格中的投标人栏目下方表格-价格汇总表  -->
+				<th rule = "content" type="text" title="风电主机单价（万元）" key="单价">
+
+				</th>
+				
+				<!-- 提取投标文件-*-价格中的投标人栏目下方表格-价格汇总表 -->
+				<th rule = "content" type="text" title="主机数量"></th>
+				
+				<!--提取投标文件-*-技术中的无明显特征词  -->
+				<th rule = "content" type="text" title="厂家备注"></th>
+		</group>
+	</project>
+	
+</projects>
