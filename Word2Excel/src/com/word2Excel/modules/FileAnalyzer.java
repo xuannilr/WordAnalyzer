@@ -37,12 +37,13 @@ public class FileAnalyzer {
 	private File root;
 	private File excel;
 	Map<Integer, String> dataFromExcel = null;
+	private int fid = 0;
 	
 	public FileAnalyzer(){}
 	public FileAnalyzer(String path,String excelPath){
 		this.root = new File(path);
 		this.excel = new File(excelPath);
-		this.dataFromExcel = POIUtils.readDataFromExcel(excel);
+		this.dataFromExcel = POIUtils.readDataFromExcel(this.excel);
 	}
 	/**
 	 * 将file 下 所有文件转化 为 自定义文件  
@@ -75,6 +76,9 @@ public class FileAnalyzer {
 			if(files!=null&&files.length>0){
 				List<CustomFile> children =  new ArrayList<CustomFile>(files.length);
 				for (File child : files) {
+					if(child.isHidden()){
+						continue;
+					}
 					CustomFile customFile = new CustomFile();
 					customFile.setLevel(level);
 					customFile.setId(0);
@@ -85,6 +89,7 @@ public class FileAnalyzer {
 					children.add(customFile);
 					if(child.isFile()){					
 						customFile.setFolder(false);
+						//customFile.setContentText(POIUtils.getAllTextFromWord(child));
 					}else{
 						customFile.setFolder(true);
 						listAllFile(allFile, child, level+1,customFile);
@@ -112,7 +117,7 @@ public class FileAnalyzer {
 		getChildrenFile(children, parnet);
 		for (CustomFile customFile : children) {
 			if(customFile.getName().endsWith(Constants.FileType.doc.getName())||
-					customFile.getName().endsWith(Constants.FileType.doc.getName())){
+					customFile.getName().endsWith(Constants.FileType.docx.getName())){
 				files.add(customFile);
 				
 			}
@@ -154,7 +159,6 @@ public class FileAnalyzer {
 				}
 			}
 		} catch (DocumentException e) {
-			
 			e.printStackTrace();
 		} 
 		return pis;
@@ -174,86 +178,93 @@ public class FileAnalyzer {
 		List<CustomFile> mainFolders =  getMainFolder(Constants.TYPE_INVITATION_FOR_BIDS);
 		
 		for (CustomFile customFile : mainFolders) {
+			System.out.println(customFile.getName());
+			fid++;
 			CustomFile invatation = getCustomFileByName(customFile.getChildren(),Constants.TYPE_INVITATION_FOR_BIDS); //招标目录
 			CustomFile tender = getCustomFileByName(customFile.getChildren(),Constants.TYPE_TENDER); //  投标目录
-			
-			System.out.println(invatation.getName());
-			
-			
 			Map<Integer, List<String>> ready2writing = new HashMap<Integer, List<String>>();	
 			for (ProjectItem projectItem : pis) {
 				List<Group> groups = projectItem.getGroups();
 				for (Group group : groups) {
-					if(Constants.TYPE_INVITATION_FOR_BIDS.equals(group.getKey())){
+					if(Constants.TYPE_INVITATION_FOR_BIDS.equals(group.getKey())){  //01-招标文件
 						List<CustomFile> docFiles =  getDocsByName(invatation);
+						List<String> read2Analy = new ArrayList<String>();
+						for(CustomFile doc :docFiles){
+							if(doc.getName().indexOf(Constants.TYPE_BUSINESS)==-1){continue;}
+							read2Analy.addAll(POIUtils.getAllTextFromWord(doc.getAbsolutePath())); 
+							System.out.println("|------>"+doc.getName());
+						}
+						List<Thead > tenderThs = group.getTheads();
+						for (Thead thead : tenderThs) {
+							int key = getMapKeyByValue(dataFromExcel, thead.getTitle());
+							List<String> templist =  ready2writing.get(key);
+							if(CommonUtils.isNull(templist)){
+								templist = new ArrayList<String>();
+								ready2writing.put(key, templist);
+							}
+							if(Constants.RuleType.folder.getName().equals(thead.getRule())){
+								int level = CommonUtils.str2Int(thead.getLevel());
+								CustomFile  cfile = getCustomFileByLevel(getParentsFile(invatation), level);
+								String fileName =  cfile.getName();
+								System.err.println("fileName-->"+ fileName);
+								templist.add(fileName);
+							}else if(Constants.RuleType.content.getName().equals(thead.getRule())){
+									String maches =  "***";
+									String keyword = thead.getKey();
+									if(keyword == null|| "".equals(keyword)){
+										keyword = thead.getTitle();
+									}
+									maches = POIUtils.analysisString(read2Analy, keyword, Constants.PATTERN1);
+									System.out.println(maches);
+									templist.add(maches);
+							}
+							
+						}
+						
+					}
+					else{   //02-投标文件
+						List<CustomFile> tenderFiles = getCustomFileByLevelOffset(tender,2); 
 						List<Thead > tenderThs = group.getTheads();
 						
+						for(CustomFile tf :tenderFiles){  ////
+							System.out.println("|------|------>"+tf.getName());
+							List<CustomFile> docFiles =  getDocsByName(tf);
+							
+							List<String> read2Analy = new ArrayList<String>();
+							for (CustomFile doc : docFiles) {  //取得所有 待解析字符集合
+								System.out.println("|------>"+doc.getName());
+								read2Analy.addAll(POIUtils.getAllTextFromWord(doc.getAbsolutePath())); 
+							}	
+							
 							for (Thead thead : tenderThs) {
 								int key = getMapKeyByValue(dataFromExcel, thead.getTitle());
 								List<String> templist =  ready2writing.get(key);
+								
 								if(CommonUtils.isNull(templist)){
 									templist = new ArrayList<String>();
 									ready2writing.put(key, templist);
 								}
-								if(Constants.RuleType.folder.getName().equals(thead.getRule())){
-									int level = CommonUtils.str2Int(thead.getLevel());
-									CustomFile  cfile = getCustomFileByLevel(getParentsFile(invatation), level);
-									String fileName =  cfile.getName();
-									System.err.println("fileName-->"+ fileName);
-									templist.add(fileName);
-								}else if(Constants.RuleType.content.getName().equals(thead.getRule())){
-									for (CustomFile doc : docFiles) {
-										if(doc.getName().indexOf(Constants.TYPE_BUSINESS)==-1){continue;}
-										System.out.println("doc^^^^^^^"+doc.getName());
-										String maches =  "***";
-										String keyword = thead.getKey();
-										if(keyword == null|| "".equals(keyword)){
-											keyword = thead.getTitle();
+								if(Constants.RuleType.content.getName().equals(thead.getRule())){
+									//TODO  内容解析
+									String maches =  "----";
+									String keyword = thead.getKey();
+									if(keyword == null|| "".equals(keyword)){
+										keyword = thead.getTitle();
+									}
+									maches = POIUtils.analysisString(read2Analy, keyword, Constants.PATTERN1);
+									if(thead.getSukey()!=null&& !"".equals(thead.getSukey())){
+										if(maches.indexOf(thead.getSukey())!=-1){
+											templist.add(maches);
+										} else {
+											continue;
 										}
-										maches = POIUtils.analysisString(doc, keyword, Constants.PATTERN);
+									}else{
 										templist.add(maches);
 									}
 								}
 								
 							}
-						
-					}
-					else{
-						List<CustomFile> tenderFiles = getCustomFileByLevelOffset(tender,2); 
-						List<Thead > tenderThs = group.getTheads();
-						
-						for(CustomFile tf :tenderFiles){
-							List<CustomFile> docFiles =  getDocsByName(tf);
-							for (CustomFile doc : docFiles) {								
-								for (Thead thead : tenderThs) {
-									int key = getMapKeyByValue(dataFromExcel, thead.getTitle());
-									List<String> templist =  ready2writing.get(key);
-									
-									if(CommonUtils.isNull(templist)){
-										templist = new ArrayList<String>();
-										ready2writing.put(key, templist);
-									}
-									if(Constants.RuleType.content.getName().equals(thead.getRule())){
-										//TODO  内容解析
-										String maches =  "----";
-										String keyword = thead.getKey();
-										if(keyword == null|| "".equals(keyword)){
-											keyword = thead.getTitle();
-										}
-										maches = POIUtils.analysisString(doc, keyword, Constants.PATTERN1);
-										if(thead.getSukey()!=null&& !"".equals(thead.getSukey())){
-											if(maches.indexOf(thead.getSukey())!=-1){
-												templist.add(maches);
-											} else {
-												continue;
-											}
-										}else{
-											templist.add(maches);
-										}
-									}
-									
-								}
-							}
+							
 						}
 					}
 				}
@@ -267,7 +278,7 @@ public class FileAnalyzer {
 		Iterator<Entry<Integer, String>> it = map.entrySet().iterator();
 		int key = -1;
 		while (it.hasNext()) {
-			Entry item = (Entry) it.next();
+			Entry<Integer, String> item = it.next();
 			if(item.getValue().equals(v)){
 				key = (Integer) item.getKey();
 				break;

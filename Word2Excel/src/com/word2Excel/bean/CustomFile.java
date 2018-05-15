@@ -11,7 +11,7 @@ public class CustomFile  {
 	private CustomFile parent;
 	private boolean isFolder;
 	private List<CustomFile> children ;
-	private StringBuffer contentText ;
+	private List<String> contentText ;
 
 	public CustomFile() {
 		super();
@@ -63,11 +63,11 @@ public class CustomFile  {
 		this.children = children;
 	}
 
-	public StringBuffer getContentText() {
+	public List<String> getContentText() {
 		return contentText;
 	}
 
-	public void setContentText(StringBuffer contentText) {
+	public void setContentText(List<String> contentText) {
 		this.contentText = contentText;
 	}
 }

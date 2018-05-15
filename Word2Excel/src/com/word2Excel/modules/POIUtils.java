@@ -145,82 +145,58 @@ public class POIUtils {
 		return isSuccessful;
 	}
     
-	@SuppressWarnings("resource")
-	public static String analysisString(CustomFile file1,String keyword,String pattern){
-		String c = "";
-		try {
-			File file = new File(file1.getAbsolutePath());
-			InputStream in =  new FileInputStream(file);
-			
-			HWPFDocument doc = null;
-			Range range  = null;
-			List<String> strFromDocPara = null;
-			XWPFDocument docx = null;
-			if(file.isHidden()){
-				return c;
-			}
-			if(file.getName().endsWith(Constants.FileType.doc.getName())){
-				//System.out.println("-****->"+file.getName());
-				doc = new HWPFDocument(in);
-				range = doc.getRange();
-				strFromDocPara = getAllTextFromWord(doc);
+    public static String analysisString(List<String> strContainer, String keyword, String pattern){
+    	String c = "";
+    	
+    	for (String string : strContainer) {
+			if(string.indexOf(keyword)!=-1&&string.trim().matches(pattern)){
+				String temp = string.trim();
+				if(temp.matches(Constants.PATTERN)){
+					temp = temp.substring(1, string.length()-1);
+				}
+				String s[] = 
+						temp.indexOf(Constants.Splitor.colon_zh.getName())==-1?
+								temp.split(Constants.Splitor.colon.getName()):
+									temp.split(Constants.Splitor.colon_zh.getName());
+				if(!CommonUtils.isNull(s)&&s.length>0){
+					
+					c = s[1];
+					if(c.length()>30){
+						c = "";
+						continue;
+					}
+					break;
+				}
 			}else{
-				strFromDocPara = getAllTextFromWord(file);
+				continue;
 			}
-			Map<Integer, List<String>> strFromDocTable = null;
-			if(range!=null){
-				strFromDocTable = getTableContentFromWord(range);	
-			}
-			for (String string : strFromDocPara) {
-				if(string.indexOf(keyword)!=-1&&string.trim().matches(pattern)){
-					String temp = string.trim();
-					if(temp.matches(Constants.PATTERN)){
-						temp = temp.substring(1, string.length()-1);
-					}
-					String s[] = 
-							temp.indexOf(Constants.Splitor.colon_zh.getName())==-1?
-									temp.split(Constants.Splitor.colon.getName()):
-										temp.split(Constants.Splitor.colon_zh.getName());
-					if(!CommonUtils.isNull(s)&&s.length>0){
-						
-						c = s[1];
-						if(c.length()>30){
-							c = "";
-							continue;
-						}
-						break;
-					}
-				}else{
-					continue;
-				}
-			}
-			if("".equals(c)&&!CommonUtils.isNull(strFromDocTable)){
-				Iterator<Entry<Integer,List<String> >> it = strFromDocTable.entrySet().iterator();
-				while (it.hasNext()) {
-					List<String> trows = it.next().getValue();
-					for (String string : trows) {
-						if(string.indexOf(keyword)!=-1&&string.trim().matches(pattern)){
-							String temp = string.substring(1, string.length()-1);
-							String s[] = temp.split(Constants.Splitor.colon.getName());
-							if(!CommonUtils.isNull(s)&&s.length>1){
-								c = s[1];
-								break;
-							}
-						}else{
-							continue;
-						}
-					}
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}catch (StringIndexOutOfBoundsException e) {
-			e.printStackTrace();
 		}
-		
-		return c;
-		
-	}
+    	
+    	return c;
+    }
+    public static String analysisString(Map<Integer, List<String>> strContainer, String keyword, String pattern){
+    	String c = "";
+    	if(!CommonUtils.isNull(strContainer)){
+			Iterator<Entry<Integer,List<String> >> it = strContainer.entrySet().iterator();
+			while (it.hasNext()) {
+				List<String> trows = it.next().getValue();
+				for (String string : trows) {
+					if(string.indexOf(keyword)!=-1&&string.trim().matches(pattern)){
+						String temp = string.substring(1, string.length()-1);
+						String s[] = temp.split(Constants.Splitor.colon.getName());
+						if(!CommonUtils.isNull(s)&&s.length>1){
+							c = s[1];
+							break;
+						}
+					}else{
+						continue;
+					}
+				}
+			}
+		}
+    	return c;
+    }
+	
 	
 	/**
      * 从 word中解析 table 
@@ -307,32 +283,37 @@ public class POIUtils {
 		 * @param doc
 		 * @return
 		 */
-		public static List<String> getAllTextFromWord( File doc) {
+		public static List<String> getAllTextFromWord(String path) {
 			List<String> cs = new ArrayList<String>();
 			try {
 				String buffer = "";
-				String path = doc.getPath();
+				
+				InputStream in = new FileInputStream(new File(path));  
 				if (path.endsWith(".doc")) {  
-				    InputStream is = new FileInputStream(new File(path));  
-				    WordExtractor ex = new WordExtractor(is);  
+				    WordExtractor ex = new WordExtractor(in);  
 				    buffer = ex.getText();  
 				    ex.close();  
 				} else if (path.endsWith("docx")) {  
-				    OPCPackage opcPackage = POIXMLDocument.openPackage(path);  
-				    POIXMLTextExtractor extractor = new XWPFWordExtractor(opcPackage);  
+				   // OPCPackage opcPackage = POIXMLDocument.openPackage(path);   //容易出问题   Zip bomb detected!
+				    XWPFDocument document = new XWPFDocument(in);
+				    POIXMLTextExtractor extractor = new XWPFWordExtractor(document); 
 				    buffer = extractor.getText();  
 				    extractor.close();  
 				} else {  
-				    System.out.println("此文件不是word文件！");  
+				    System.err.println("此 [ "+ path +" ] 不是word文件！");  
 				}  
 				String c[] = buffer.split("\r|\n");
 				
 				for (String string : c) {
-					if(string.indexOf(Constants.Splitor.colon_zh.getName())!=-1||string.indexOf(Constants.Splitor.colon.getName())!=-1){
-						cs.add(string.trim());
+					if(string.indexOf(Constants.Splitor.colon_zh.getName())!=-1
+							||string.indexOf(Constants.Splitor.colon.getName())!=-1){
+						if("".equals(string)||string.length()>30){
+							continue;
+						}
+						cs.add(string.trim().replaceAll("\\s", ""));
 					}
 				}
-			} catch (IOException | XmlException | OpenXML4JException e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			return cs;         

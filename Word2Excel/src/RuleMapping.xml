@@ -9,10 +9,10 @@
 			<th rule = "folder"  property='pDate' level="1" type="text" title="开标日期" ></th>
 			
 			<!-- 提取招标文件-招标文件（商务部分）中的招标编号 -->
-			<th rule = "content" property='pSequence' content-type='paragraph' type="text" title="招标编号" ></th>
+			<th rule = "content" property='pSequence' content-type='paragraph|table' type="text" title="招标编号" ></th>
 			
 			<!-- 提取招标文件-招标文件（商务部分）中的招标人栏目 -->
-			<th rule = "content"  property='pCorporation' content-type='table' type="text" title='项目公司' key='招 标 人'></th>
+			<th rule = "content"  property='pCorporation' content-type='paragraph|table' type="text" title='项目公司' key='招标人'></th>
 			
 			<!-- 提取目录结构第3层目录名 -->
 			<th rule = "folder" property='pName' level="2" type="text" isImportant="ture" title="工程名+标段名+数量"></th>
