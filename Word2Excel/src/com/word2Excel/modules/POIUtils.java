@@ -17,6 +17,7 @@ import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.POIXMLDocument;
 import org.apache.poi.POIXMLTextExtractor;
 import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.HWPFOldDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.hwpf.usermodel.Paragraph;
 import org.apache.poi.hwpf.usermodel.Range;
@@ -34,6 +35,10 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTableCell;
+import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.apache.xmlbeans.XmlException;
 
 import com.word2Excel.bean.CustomFile;
@@ -101,7 +106,6 @@ public class POIUtils {
     		Iterator<Entry<String, Map<Integer, List<String>>>> it = data.entrySet().iterator();
 			while (it.hasNext()) {
 				Entry<String, Map<Integer, List<String>>> entry = it.next();
-				//System.out.println(entry.getKey());
 				Map<Integer, List<String>> rowData = entry.getValue();
 				Iterator<Entry<Integer, List<String>>> rowDataIt = rowData.entrySet().iterator();
 				
@@ -144,7 +148,13 @@ public class POIUtils {
 		}
 		return isSuccessful;
 	}
-    
+    /**
+     * 分析纯文本内容
+     * @param strContainer
+     * @param keyword
+     * @param pattern
+     * @return
+     */
     public static String analysisString(List<String> strContainer, String keyword, String pattern){
     	String c = "";
     	
@@ -174,6 +184,13 @@ public class POIUtils {
     	
     	return c;
     }
+    /**
+     * 分析 表格中的内容
+     * @param strContainer
+     * @param keyword
+     * @param pattern
+     * @return
+     */
     public static String analysisString(Map<Integer, List<String>> strContainer, String keyword, String pattern){
     	String c = "";
     	if(!CommonUtils.isNull(strContainer)){
@@ -196,88 +213,8 @@ public class POIUtils {
 		}
     	return c;
     }
-	
-	
-	/**
-     * 从 word中解析 table 
-     * @param rangetbl
-     * @return
-     */
-    public static Map<Integer,List<String >> getTableContentFromWord(Range rangetbl){
-    	Map <Integer,List<String>> tabmap = new HashMap<Integer, List<String>>();
-    	if(rangetbl ==null) return null;
-    	try {   
-            TableIterator it = new TableIterator(rangetbl);  
-            int  index  = 0;
-            while(it.hasNext()){  
-            	List<String > tbContent = new ArrayList<String>();  
-                Table tb = (Table)it.next();  
-                for(int i = 0;i < tb.numRows();i++){                //获取  row
- 
-                    TableRow tr = tb.getRow(i);
-                    StringBuilder sb = new StringBuilder("(");
-                   
-                    for(int j = 0;j < tr.numCells();j++){            //  获取 cell
-                        TableCell td = tr.getCell(j);  
-                        StringBuilder tdCon = new StringBuilder();
-                        for(int k = 0;k < td.numParagraphs();k++){   //  获取 cell content
-                            Paragraph para = td.getParagraph(k);
-                            tdCon.append(para.text().trim());    
-                        }
-                        if(tdCon.length()>1){
-                        	
-                        	sb.append(tdCon.toString().replaceAll("：", "").replaceAll("\n", "")); //替换中文字符":" , 换行"\n"
-                        	sb.append( (j < tr.numCells() -1)? ":" : "");
-                        }
-                    }  
-                    sb.append(")");
-                    if(sb.length()>2){                    	
-                    	tbContent.add(sb.toString());
-                    }
-                } 
-                ++index;
-                tabmap.put(index, tbContent);
-            }  
 
-        } catch (Exception e) {  
-            e.printStackTrace();  
-        } 
-    	return tabmap;
-    	
-    }
-    
-    /**
-	 * 获取文档的  text 文本
-	 * @param doc
-	 * @return
-	 */
-	public static List<String> getAllTextFromWord( HWPFDocument doc) {
-		/*if (path.endsWith(".doc")) {  
-            InputStream is = new FileInputStream(new File(path));  
-            WordExtractor ex = new WordExtractor(is);  
-            buffer = ex.getText();  
-            ex.close();  
-        } else if (path.endsWith("docx")) {  
-            OPCPackage opcPackage = POIXMLDocument.openPackage(path);  
-            POIXMLTextExtractor extractor = new XWPFWordExtractor(opcPackage);  
-            buffer = extractor.getText();  
-            extractor.close();  
-        } else {  
-            System.out.println("此文件不是word文件！");  
-        }  */
-		
-        String  content = doc.getDocumentText();
-       
-      
-        String c[] = content.split("\r|\n");
-        List<String> cs = new ArrayList<String>(); 
-        for (String string : c) {
-			if(string.indexOf(Constants.Splitor.colon_zh.getName())!=-1||string.indexOf(Constants.Splitor.colon.getName())!=-1){
-				cs.add(string.trim());
-			}
-		}
-		return cs;         
-	}
+   
 	  /**
 		 * 获取文档的  text 文本
 		 * @param doc
@@ -290,7 +227,7 @@ public class POIUtils {
 				
 				InputStream in = new FileInputStream(new File(path));  
 				if (path.endsWith(".doc")) {  
-				    WordExtractor ex = new WordExtractor(in);  
+				    WordExtractor ex = new WordExtractor(in); 
 				    buffer = ex.getText();  
 				    ex.close();  
 				} else if (path.endsWith("docx")) {  
@@ -305,17 +242,116 @@ public class POIUtils {
 				String c[] = buffer.split("\r|\n");
 				
 				for (String string : c) {
-					if(string.indexOf(Constants.Splitor.colon_zh.getName())!=-1
-							||string.indexOf(Constants.Splitor.colon.getName())!=-1){
-						if("".equals(string)||string.length()>30){
-							continue;
-						}
-						cs.add(string.trim().replaceAll("\\s", ""));
+//					if(string.indexOf(Constants.Splitor.colon_zh.getName())!=-1
+//							||string.indexOf(Constants.Splitor.colon.getName())!=-1){
+//					}
+					if("".equals(string)||string.length()>30){
+						continue;
 					}
+					cs.add(string.trim().replaceAll("\\s", ""));
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			return cs;         
+		}
+		
+		/**
+		 *   重写word 操作
+		 *   
+		 */
+		public Map<Integer,Map<Integer,String>> getTextExtractor(String path){
+			String buffer = "";
+			try {
+				InputStream in = new FileInputStream(new File(path));  
+				if (path.endsWith(".doc")) {  
+					HWPFDocument word2003 =new  HWPFDocument(in);
+					WordExtractor ex = new WordExtractor(word2003);
+				    buffer = ex.getText();  
+				    ex.close();  
+				} else if (path.endsWith("docx")) {  
+				    XWPFDocument word2007 = new XWPFDocument(in);
+				    POIXMLTextExtractor extractor = new XWPFWordExtractor(word2007); 
+				    buffer = extractor.getText();  
+				    extractor.close();  
+				} else {  
+				    System.err.println("此 [ "+ path +" ] 不是word文件！");  
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}  
+			
+			return null;
+		}
+		
+		/**
+		 * convert word2003 table  to list
+		 */
+		
+		public List<Map<String,String>> convert2003Table(HWPFDocument word2003){
+			Range range = word2003.getRange();
+	    	List<Map<String,String>> tabList = new ArrayList<Map<String,String>>();
+	    	if(range ==null) return null;
+	    	try {   
+	            TableIterator it = new TableIterator(range);  
+	            while(it.hasNext()){  
+	            	Map<String,String > tbContent = new HashMap<String, String>();  
+	                Table tb = (Table)it.next();  
+	                for(int i = 0;i < tb.numRows();i++){                //获取  row
+	 
+	                    TableRow tr = tb.getRow(i);
+	                   
+	                    for(int j = 0;j < tr.numCells();j++){            //  获取 cell
+	                        TableCell td = tr.getCell(j);  
+	                        StringBuilder tdCon = new StringBuilder();
+	                        for(int k = 0;k < td.numParagraphs();k++){   //  获取 cell content
+	                            Paragraph para = td.getParagraph(k);
+	                            tdCon.append(para.text().trim());    
+	                        }
+	                        String value = tdCon.toString().replaceAll("：", "").replaceAll("\n", ""); //替换中文字符":" , 换行"\n"
+	                        String key = i+","+j;       //  行列坐标
+	                        tbContent.put(key, value); 
+	                    }  
+	                } 
+
+	                tabList.add(tbContent);
+	            }  
+
+	        } catch (Exception e) {  
+	            e.printStackTrace();  
+	        } 
+	    	
+	    	
+	    
+			return tabList;
+		}
+		
+		/**
+		 * convert word2007 table  to list
+		 */
+		public List<Map<String,String>> convert2007Table(XWPFDocument word2007){
+			List <XWPFTable> tables = word2007.getTables();
+			List <Map<String,String>> tableList  = new ArrayList<Map<String,String>>(); //ready to return
+			for (XWPFTable xwpfTable : tables) {
+				Map <String, String > tabMap = new HashMap<String, String>();
+				int maxRow = xwpfTable.getRowBandSize();
+				for(int row = 0 ; row<maxRow ;row++){
+					XWPFTableRow tablerow = xwpfTable.getRow(row);
+					int  maxCol = tablerow.getTableCells().size();
+					for(int col = 0 ;col < maxCol;col++){
+						XWPFTableCell cell = tablerow.getCell(col);
+						List <XWPFParagraph> paragragh = cell.getParagraphs();
+						StringBuilder sb = new StringBuilder();
+						String value =sb.toString();
+						String key = row+","+col;
+						for (XWPFParagraph xwpfParagraph : paragragh) {
+							sb.append(xwpfParagraph.getParagraphText().replaceAll("\\s", ""));
+						}
+						tabMap.put(key, value);
+					}
+				}
+				tableList.add(tabMap);
+			}
+			return tableList;
 		}
 }
