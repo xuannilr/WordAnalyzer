@@ -1,6 +1,8 @@
 package com.word2Excel.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,6 +55,17 @@ public class CommonUtils {
 			flag = true;
 		}
 		return flag;
+	}
+	public static List<String> strSplit2List(String str,String splitor){
+		List <String> list =  new ArrayList<String>();
+		if(str.indexOf(splitor)!=-1){
+			String [] temp = str.split(splitor);
+			for (String string : temp) {
+				list.add(string);
+			}
+		}
+		
+		return list;
 	}
 	
 }

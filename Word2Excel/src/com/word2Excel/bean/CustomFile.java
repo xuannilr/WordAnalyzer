@@ -1,6 +1,7 @@
 package com.word2Excel.bean;
 
 import java.util.List;
+import java.util.Map;
 
 public class CustomFile  {
 	
@@ -11,7 +12,8 @@ public class CustomFile  {
 	private CustomFile parent;
 	private boolean isFolder;
 	private List<CustomFile> children ;
-	private List<String> contentText ;
+	private List<String> paragrathsText ;
+	private List <Map<String,String>> tablesParagraphsText;
 
 	public CustomFile() {
 		super();
@@ -63,11 +65,20 @@ public class CustomFile  {
 		this.children = children;
 	}
 
-	public List<String> getContentText() {
-		return contentText;
+	public List<String> getParagrathsText() {
+		return paragrathsText;
 	}
 
-	public void setContentText(List<String> contentText) {
-		this.contentText = contentText;
+	public void setParagrathsText(List<String> paragrathsText) {
+		this.paragrathsText = paragrathsText;
 	}
+
+	public List<Map<String, String>> getTablesParagraphsText() {
+		return tablesParagraphsText;
+	}
+
+	public void setTablesParagraphsText(List<Map<String,String>> tablesParagraphsText) {
+		this.tablesParagraphsText = tablesParagraphsText;
+	}
+	
 }
