@@ -40,7 +40,7 @@
 				<th rule = "content" type="text" title="风电主机单价（万元）" key="单价" content-type='table'/>
 				
 				<!-- 提取投标文件-*-价格中的投标人栏目下方表格-价格汇总表 -->
-				<th rule = "content" type="text" title="主机数量" key="数量|台数" content-type='table'/>
+				<th rule = "content" type="text" title="主机数量" key="台数" content-type='table'/>
 				
 				<!--提取投标文件-*-技术中的无明显特征词  -->
 				<th rule = "content" type="text" title="厂家备注"/>

@@ -68,4 +68,17 @@ public class CommonUtils {
 		return list;
 	}
 	
+	
+	public static boolean indexOf(String str,String []key){
+		boolean a = false;
+		if(key!=null&&key.length>0){
+			for (String string : key) {
+				if(str.indexOf(string)!=-1){
+					a = true;
+				}
+			}
+		}
+		return a;
+	}
+	
 }

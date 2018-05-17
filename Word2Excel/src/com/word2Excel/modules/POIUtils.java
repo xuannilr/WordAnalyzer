@@ -198,6 +198,7 @@ public class POIUtils {
 	 */
 	public static String analysisTableString(List< Map<String,String>> strContainer, String keyword, String pattern) {
 		String c = "";
+		String ks[]  = keyword.split("|"); 
 		if (!CommonUtils.isNull(strContainer)) {
 			Iterator<Map<String, String>> it = strContainer.iterator();
 			a:while (it.hasNext()) {
