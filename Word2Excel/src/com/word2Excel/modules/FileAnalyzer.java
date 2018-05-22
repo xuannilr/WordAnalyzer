@@ -37,7 +37,6 @@ public class FileAnalyzer {
 	private File root;
 	private File excel;
 	Map<Integer, String> dataFromExcel = null;
-	private int fid = 0;
 	
 	public FileAnalyzer(){}
 	public FileAnalyzer(String path,String excelPath){
@@ -46,7 +45,7 @@ public class FileAnalyzer {
 		this.dataFromExcel = POIUtils.readDataFromExcel(this.excel);
 	}
 	/**
-	 * ½«file ÏÂ ËùÓĞÎÄ¼ş×ª»¯ Îª ×Ô¶¨ÒåÎÄ¼ş  
+	 * å°†file ä¸‹ æ‰€æœ‰æ–‡ä»¶è½¬åŒ– ä¸º è‡ªå®šä¹‰æ–‡ä»¶  
 	 * @param file   
 	 * @return
 	 */
@@ -64,7 +63,7 @@ public class FileAnalyzer {
 		return allFile;
 	}
 	/**
-	 * µİ¹é ±éÀú ËùÓĞÎÄ¼ş
+	 * é€’å½’ éå† æ‰€æœ‰æ–‡ä»¶
 	 * @param allFile
 	 * @param file
 	 * @param level
@@ -179,14 +178,13 @@ public class FileAnalyzer {
 		
 		for (CustomFile customFile : mainFolders) {
 			System.out.println(customFile.getName());
-			fid++;
-			CustomFile invatation = getCustomFileByName(customFile.getChildren(),Constants.TYPE_INVITATION_FOR_BIDS); //ÕĞ±êÄ¿Â¼
-			CustomFile tender = getCustomFileByName(customFile.getChildren(),Constants.TYPE_TENDER); //  Í¶±êÄ¿Â¼
+			CustomFile invatation = getCustomFileByName(customFile.getChildren(),Constants.TYPE_INVITATION_FOR_BIDS); //æ‹›æ ‡ç›®å½•
+			CustomFile tender = getCustomFileByName(customFile.getChildren(),Constants.TYPE_TENDER); //  æŠ•æ ‡ç›®å½•
 			Map<Integer, List<String>> ready2writing = new HashMap<Integer, List<String>>();	
 			for (ProjectItem projectItem : pis) {
 				List<Group> groups = projectItem.getGroups();
 				for (Group group : groups) {
-					if(Constants.TYPE_INVITATION_FOR_BIDS.equals(group.getKey())){  //01-ÕĞ±êÎÄ¼ş
+					if(Constants.TYPE_INVITATION_FOR_BIDS.equals(group.getKey())){  //01-æ‹›æ ‡æ–‡ä»¶
 						List<CustomFile> docFiles =  getDocsByName(invatation);
 						List<String> ready2AnalyParagraphs = new ArrayList<String>();
 						List<Map<String,String>> ready2AnalyTables = new ArrayList<Map<String,String>>();
@@ -200,7 +198,7 @@ public class FileAnalyzer {
 							analyzerRules(thead,ready2writing, ready2AnalyTables, ready2AnalyParagraphs,invatation);
 						}
 					}
-					else{   //02-Í¶±êÎÄ¼ş
+					else{   //02-æŠ•æ ‡æ–‡ä»¶
 						List<CustomFile> tenderFiles = getCustomFileByLevelOffset(tender,2); 
 						List<Thead > tenderThs = group.getTheads();
 						
@@ -208,7 +206,7 @@ public class FileAnalyzer {
 							List<CustomFile> docFiles =  getDocsByName(tf);
 							List<String> ready2AnalyParagraphs = new ArrayList<String>();
 							List<Map<String,String>> ready2AnalyTables = new ArrayList<Map<String,String>>();
-							for (CustomFile doc : docFiles) {  //È¡µÃËùÓĞ ´ı½âÎö×Ö·û¼¯ºÏ
+							for (CustomFile doc : docFiles) {  //å–å¾—æ‰€æœ‰ å¾…è§£æå­—ç¬¦é›†åˆ
 								ready2AnalyParagraphs.addAll(doc.getParagrathsText());
 								ready2AnalyTables.addAll(doc.getTablesParagraphsText());
 							}	
@@ -239,7 +237,7 @@ public class FileAnalyzer {
 			String fileName =  cfile.getName();
 			templist.add(fileName);
 		}else if(Constants.RuleType.content.getName().equals(thead.getRule())){
-			//TODO  ÄÚÈİ½âÎö
+			//TODO  å†…å®¹è§£æ
 			String maches =  "----";
 			String keyword = thead.getKey();
 			if(keyword == null|| "".equals(keyword)){
@@ -249,7 +247,7 @@ public class FileAnalyzer {
 				boolean f = "h".equals(thead.getDirection())? false: true;
 				maches = POIUtils.analysisTableString(ready2AnalyTables, keyword,f);
 			}else{
-				if(CommonUtils.indexOf(keyword, new String[]{"ÊÇ","ÒÔ","Îª","Ó¦Îª"})){
+				if(CommonUtils.indexOf(keyword, new String[]{"æ˜¯","ä»¥","ä¸º","åº”ä¸º"})){
 					keyword = keyword.substring(0, keyword.length()-1);
 					System.out.println(keyword);
 					maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword);

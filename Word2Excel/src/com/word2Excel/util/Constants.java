@@ -4,23 +4,23 @@ public class Constants {
 	/**
 	 *   filter 
 	 */
-	public  final static String TYPE_INVITATION_FOR_BIDS = "01-ÕĞ±êÎÄ¼ş";
-	public  final static String TYPE_TENDER = "02-Í¶±êÎÄ¼ş";   
+	public  final static String TYPE_INVITATION_FOR_BIDS = "01-æ‹›æ ‡æ–‡ä»¶";
+	public  final static String TYPE_TENDER = "02-æŠ•æ ‡æ–‡ä»¶";   
 	
 	
-	public  final static String TYPE_BUSINESS = "ÉÌÎñ²¿·Ö";
+	public  final static String TYPE_BUSINESS = "å•†åŠ¡éƒ¨åˆ†";
 	
 	/**
 	 * 
-	 * ·Ö¸î·û
+	 * åˆ†å‰²ç¬¦
 	 *
 	 */
 	public  static enum Splitor{
 		colon(":"),
-		colon_zh("£º"),
+		colon_zh("ï¼š"),
 		comma(","),
-		comma_zh("£¬"),
-		full_stop("¡£");   //¾äºÅ
+		comma_zh("ï¼Œ"),
+		full_stop("ã€‚");   //å¥å·
 		
 		private String name;
 		Splitor(String name){
@@ -72,8 +72,8 @@ public class Constants {
 			"folder","content"
 			}; 
 	
-	public  final static String  PATTERN  = "^[\\(£¨][^\\(£¨]+[\\)£©]$"; //Æ¥Åä " () "
-	public  final static String  PATTERN1  = "\\S+(:){1,}\\S+|\\S+(£º){1,}\\S+"; //Æ¥Åä " **:** "
+	public  final static String  PATTERN  = "^[\\(ï¼ˆ][^\\(ï¼ˆ]+[\\)ï¼‰]$"; //åŒ¹é… " () "
+	public  final static String  PATTERN1  = "\\S+(:){1,}\\S+|\\S+(ï¼š){1,}\\S+"; //åŒ¹é… " **:** "
 	
 	
 	

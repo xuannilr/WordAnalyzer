@@ -37,7 +37,7 @@ public class Main {
 		POIUtils.writeData2Excel(new File(targetPath), map);
 		long end = System.currentTimeMillis();
 		System.out.println();
-		System.out.println("运行时间: "+ (end - start ));
+		System.out.println("杩愯鏃堕棿: "+ (end - start ));
 		
 		System.out.println(map.toString());
 		logger.info(map.toString());

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 通用方法
+ * 閫氱敤鏂规硶
  * @author Administrator
  *
  */
