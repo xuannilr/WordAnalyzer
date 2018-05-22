@@ -187,6 +187,43 @@ public class POIUtils {
 
 		return c;
 	}
+	
+	public static String analysisString(List<String> strContainer, String keyword) {
+		String c = "";
+
+		for (String string : strContainer) {
+			
+			if (string.indexOf(keyword) != -1) {
+				String temp = string.trim();
+				int beginIndex  = temp.indexOf(keyword) + keyword.length();
+				int length = temp.length();
+				int endIndex = temp.indexOf(Constants.Splitor.full_stop.getName(),beginIndex);
+				if(endIndex==-1){
+					endIndex = temp.indexOf(Constants.Splitor.comma_zh.getName(),beginIndex);
+				}
+				if(endIndex==-1){
+					endIndex = length-1;
+				}
+				if(beginIndex>=endIndex){
+					endIndex = length-1;
+				}
+				if(beginIndex>=length){
+					continue;
+				}
+				System.out.println(temp);
+				System.out.println(keyword);
+				System.out.println("b--> "+beginIndex+"  e-->"+endIndex);
+				c = temp.substring(beginIndex, endIndex);
+				if(!"".equals(c)){
+					break;
+				}
+			} else {
+				continue;
+			}
+		}
+
+		return c;
+	}
 
 	/**
 	 * 分析 表格中的内容
@@ -196,9 +233,8 @@ public class POIUtils {
 	 * @param pattern
 	 * @return
 	 */
-	public static String analysisTableString(List< Map<String,String>> strContainer, String keyword, String pattern) {
+	public static String analysisTableString(List< Map<String,String>> strContainer, String keyword,boolean direction) {
 		String c = "";
-		String ks[]  = keyword.split("|"); 
 		if (!CommonUtils.isNull(strContainer)) {
 			Iterator<Map<String, String>> it = strContainer.iterator();
 			a:while (it.hasNext()) {
@@ -211,8 +247,14 @@ public class POIUtils {
 						if(value.indexOf(keyword)!=-1){
 							String key = entry.getKey();
 							String str[] =  key.split(",");
-							String keu = (Integer.parseInt(str[0])+1)+","+str[1];
+							String keu = "";
+							if(direction){
+								keu = (Integer.parseInt(str[0])+1)+","+str[1];
+							}else{
+								keu = str[0]+","+(Integer.parseInt(str[1])+1);
+							}
 							c = trows.get(keu);
+							if(c!=null&&c.length()>30){continue;}
 							break a;
 						}
 					}
@@ -326,7 +368,7 @@ public class POIUtils {
 			buffer = ex.getText();
 			String c[] = buffer.split("\r|\n");
 			for (String string : c) {
-				if ("".equals(string) || string.length() > 30) {
+				if ("".equals(string)) {
 					continue;
 				}
 				allParagraphsText.add(string.trim().replaceAll("\\s", ""));

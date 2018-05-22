@@ -11,6 +11,8 @@ public class Thead {
 	String contentType;
 	String level;
 	String sukey ;
+	String direction;
+	
 	
 	public String getLevel() {
 		return level;
@@ -61,6 +63,13 @@ public class Thead {
 	public void setSukey(String sukey) {
 		this.sukey = sukey;
 	}
+	
+	public String getDirection() {
+		return direction;
+	}
+	public void setDirection(String direction) {
+		this.direction = direction;
+	}
 	public Thead(Element ele){
 		this();
 		if(ele!=null){
@@ -72,6 +81,7 @@ public class Thead {
 			this.dataType = ele.attributeValue("dataType");
 			this.level = ele.attributeValue("level");
 			this.sukey= ele.attributeValue("sukey");
+			this.direction = ele.attributeValue("direction");
 		}
 	}
 	public Thead(){

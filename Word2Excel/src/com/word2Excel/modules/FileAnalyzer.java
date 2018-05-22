@@ -190,38 +190,15 @@ public class FileAnalyzer {
 						List<CustomFile> docFiles =  getDocsByName(invatation);
 						List<String> ready2AnalyParagraphs = new ArrayList<String>();
 						List<Map<String,String>> ready2AnalyTables = new ArrayList<Map<String,String>>();
-						
 						for(CustomFile doc :docFiles){
-							if(doc.getName().indexOf(Constants.TYPE_BUSINESS)==-1){continue;}
+							//if(doc.getName().indexOf(Constants.TYPE_BUSINESS)==-1){continue;}
 							ready2AnalyParagraphs.addAll(doc.getParagrathsText()); 
 							ready2AnalyTables.addAll(doc.getTablesParagraphsText());
 						}
 						List<Thead > tenderThs = group.getTheads();
 						for (Thead thead : tenderThs) {
-							int key = getMapKeyByValue(dataFromExcel, thead.getTitle());
-							List<String> templist =  ready2writing.get(key);
-							if(CommonUtils.isNull(templist)){
-								templist = new ArrayList<String>();
-								ready2writing.put(key, templist);
-							}
-							if(Constants.RuleType.folder.getName().equals(thead.getRule())){
-								int level = CommonUtils.str2Int(thead.getLevel());
-								CustomFile  cfile = getCustomFileByLevel(getParentsFile(invatation), level);
-								String fileName =  cfile.getName();
-								templist.add(fileName);
-							}else if(Constants.RuleType.content.getName().equals(thead.getRule())){
-									String maches =  "***";
-									String keyword = thead.getKey();
-									if(keyword == null|| "".equals(keyword)){
-										keyword = thead.getTitle();
-									}
-									maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword, Constants.PATTERN1);
-									System.out.println(maches);
-									templist.add(maches);
-							}
-							
+							analyzerRules(thead,ready2writing, ready2AnalyTables, ready2AnalyParagraphs,invatation);
 						}
-						
 					}
 					else{   //02-投标文件
 						List<CustomFile> tenderFiles = getCustomFileByLevelOffset(tender,2); 
@@ -229,48 +206,15 @@ public class FileAnalyzer {
 						
 						for(CustomFile tf :tenderFiles){  ////
 							List<CustomFile> docFiles =  getDocsByName(tf);
-							
 							List<String> ready2AnalyParagraphs = new ArrayList<String>();
 							List<Map<String,String>> ready2AnalyTables = new ArrayList<Map<String,String>>();
 							for (CustomFile doc : docFiles) {  //取得所有 待解析字符集合
 								ready2AnalyParagraphs.addAll(doc.getParagrathsText());
 								ready2AnalyTables.addAll(doc.getTablesParagraphsText());
 							}	
-							
 							for (Thead thead : tenderThs) {
-								int key = getMapKeyByValue(dataFromExcel, thead.getTitle());
-								List<String> templist =  ready2writing.get(key);
-								
-								if(CommonUtils.isNull(templist)){
-									templist = new ArrayList<String>();
-									ready2writing.put(key, templist);
-								}
-								if(Constants.RuleType.content.getName().equals(thead.getRule())){
-									//TODO  内容解析
-									String maches =  "----";
-									String keyword = thead.getKey();
-									if(keyword == null|| "".equals(keyword)){
-										keyword = thead.getTitle();
-									}
-									if("table".equals(thead.getContentType())){
-										maches = POIUtils.analysisTableString(ready2AnalyTables, keyword, Constants.PATTERN1);
-									}else{
-										maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword, Constants.PATTERN1);
-										
-									}
-									if(thead.getSukey()!=null&& !"".equals(thead.getSukey())){
-										if(maches.indexOf(thead.getSukey())!=-1){
-											templist.add(maches);
-										} else {
-											continue;
-										}
-									}else{
-										templist.add(maches);
-									}
-								}
-								
-							}
-							
+								analyzerRules(thead, ready2writing, ready2AnalyTables, ready2AnalyParagraphs,null);
+							}	
 						}
 					}
 				}
@@ -279,6 +223,53 @@ public class FileAnalyzer {
 			map.put(customFile.getName(),ready2writing );
 		}
 		return map;
+	}
+	private void analyzerRules(Thead thead,Map<Integer, List<String>> ready2writing,List<Map<String,String>> ready2AnalyTables,List<String>   ready2AnalyParagraphs,CustomFile invatation){
+		boolean flag = false;
+		int key = getMapKeyByValue(dataFromExcel, thead.getTitle());
+		List<String> templist =  ready2writing.get(key);
+		
+		if(CommonUtils.isNull(templist)){
+			templist = new ArrayList<String>();
+			ready2writing.put(key, templist);
+		}
+		if(Constants.RuleType.folder.getName().equals(thead.getRule())){
+			int level = CommonUtils.str2Int(thead.getLevel());
+			CustomFile  cfile = getCustomFileByLevel(getParentsFile(invatation), level);
+			String fileName =  cfile.getName();
+			templist.add(fileName);
+		}else if(Constants.RuleType.content.getName().equals(thead.getRule())){
+			//TODO  内容解析
+			String maches =  "----";
+			String keyword = thead.getKey();
+			if(keyword == null|| "".equals(keyword)){
+				keyword = thead.getTitle();
+			}
+			if("table".equals(thead.getContentType())){
+				boolean f = "h".equals(thead.getDirection())? false: true;
+				maches = POIUtils.analysisTableString(ready2AnalyTables, keyword,f);
+			}else{
+				if(CommonUtils.indexOf(keyword, new String[]{"是","以","为","应为"})){
+					keyword = keyword.substring(0, keyword.length()-1);
+					System.out.println(keyword);
+					maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword);
+				}else{					
+					maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword, Constants.PATTERN1);
+				}
+			}
+			if(thead.getSukey()!=null&& !"".equals(thead.getSukey())){
+				if(maches.indexOf(thead.getSukey())!=-1){
+					flag = true;
+				} else {
+					flag = false;
+				}
+			}else{
+				flag = true;
+			}
+			if(flag){				
+				templist.add(maches);
+			}
+		}
 	}
 	private Integer getMapKeyByValue(Map<Integer,String> map,String v){
 		Iterator<Entry<Integer, String>> it = map.entrySet().iterator();

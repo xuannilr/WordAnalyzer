@@ -17,8 +17,11 @@ public class Constants {
 	 */
 	public  static enum Splitor{
 		colon(":"),
+		colon_zh("£º"),
 		comma(","),
-		colon_zh("£º");
+		comma_zh("£¬"),
+		full_stop("¡£");   //¾äºÅ
+		
 		private String name;
 		Splitor(String name){
 			this.name = name;
