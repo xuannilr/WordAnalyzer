@@ -37,6 +37,7 @@ import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 
 import com.word2Excel.bean.CustomFile;
+import com.word2Excel.bean.vo.Thead;
 import com.word2Excel.util.CommonUtils;
 import com.word2Excel.util.Constants;
 
@@ -113,7 +114,6 @@ public class POIUtils {
 				Entry<String, Map<Integer, List<String>>> entry = it.next();
 				Map<Integer, List<String>> rowData = entry.getValue();
 				Iterator<Entry<Integer, List<String>>> rowDataIt = rowData.entrySet().iterator();
-
 				int maxRowindex = 1;
 				while (rowDataIt.hasNext()) {
 					Entry<Integer, List<String>> en = rowDataIt.next();
@@ -142,8 +142,8 @@ public class POIUtils {
 			}
 			FileOutputStream fo = new FileOutputStream(excel); // 输出到文件
 			workbook.write(fo);
-			in.close();
 			fo.close();
+			in.close();
 			isSuccessful = true;
 			if (isSuccessful) {
 				System.out.println("写入sheet表：" + workbook.getSheetName(0) + " 完成");
@@ -173,9 +173,9 @@ public class POIUtils {
 	 * @param pattern
 	 * @return
 	 */
-	public static String analysisString(List<String> strContainer, String keyword, String pattern) {
+	public static String analysisString(List<String> strContainer, String keyword, String pattern,Thead thead) {
 		String c = "";
-
+		String sukey = thead.getSukey(); 
 		for (String string : strContainer) {
 			if (string.indexOf(keyword) != -1 && string.trim().matches(pattern)) {
 				String temp = string.trim();
@@ -187,6 +187,11 @@ public class POIUtils {
 						: temp.split(Constants.Splitor.colon_zh.getName());
 				if (!CommonUtils.isNull(s) && s.length > 0) {
 					c = s[1];
+					if(!CommonUtils.isNull(sukey)){
+						if(c.indexOf(sukey)==-1){
+							continue;
+						}
+					}
 					if (c.length() > 30) {
 						c = "";
 						continue;
@@ -201,7 +206,7 @@ public class POIUtils {
 		return c;
 	}
 	
-	public static String analysisString(List<String> strContainer, String keyword) {
+	public static String analysisString(List<String> strContainer, String keyword,Thead thead) {
 		String c = "";
 
 		for (String string : strContainer) {
@@ -215,7 +220,7 @@ public class POIUtils {
 					endIndex = temp.indexOf(Constants.Splitor.comma_zh.getName(),beginIndex);
 				}
 				if(endIndex==-1){
-					endIndex = length-1;
+					endIndex = length;
 				}
 				if(beginIndex>=endIndex){
 					endIndex = length-1;
@@ -223,9 +228,6 @@ public class POIUtils {
 				if(beginIndex>=length){
 					continue;
 				}
-				System.out.println(temp);
-				System.out.println(keyword);
-				System.out.println("b--> "+beginIndex+"  e-->"+endIndex);
 				c = temp.substring(beginIndex, endIndex);
 				if(!"".equals(c)){
 					break;
@@ -246,8 +248,9 @@ public class POIUtils {
 	 * @param pattern
 	 * @return
 	 */
-	public static String analysisTableString(List< Map<String,String>> strContainer, String keyword,boolean direction) {
+	public static String analysisTableString(List< Map<String,String>> strContainer, String keyword,Thead thead) {
 		String c = "";
+		boolean direction = "h".equals(thead.getDirection())? false: true;
 		if (!CommonUtils.isNull(strContainer)) {
 			Iterator<Map<String, String>> it = strContainer.iterator();
 			a:while (it.hasNext()) {
@@ -267,7 +270,7 @@ public class POIUtils {
 								keu = str[0]+","+(Integer.parseInt(str[1])+1);
 							}
 							c = trows.get(keu);
-							if(c!=null&&c.length()>30){continue;}
+							if(c!=null&&c.length()>30){c = "******"; continue;}
 							break a;
 						}
 					}

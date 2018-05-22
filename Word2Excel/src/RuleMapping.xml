@@ -19,6 +19,7 @@
 
 			<th rule = "content"  type="text" isImportant="ture" title="项目地理坐标" key='地理位置为'  >
 				<keyword> 地理坐标</keyword>
+				<keyword> 地理位置</keyword>
 			</th>
 			
 			<th rule = "content"  type="text" isImportant="ture" title="海拔高度"  key='海拔是'>
