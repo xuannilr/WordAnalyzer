@@ -345,6 +345,8 @@ public class POIUtils {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}catch (Exception e) {
+			
 		} finally {
 			customFile.setParagrathsText(texts);
 			customFile.setTablesParagraphsText(tableTexts);
