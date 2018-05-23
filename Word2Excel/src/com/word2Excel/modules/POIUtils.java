@@ -77,13 +77,10 @@ public class POIUtils {
 		} catch (EncryptedDocumentException e) {
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InvalidFormatException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return map;
@@ -153,13 +150,10 @@ public class POIUtils {
 		} catch (EncryptedDocumentException e) {
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InvalidFormatException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return isSuccessful;
@@ -205,7 +199,13 @@ public class POIUtils {
 
 		return c;
 	}
-	
+	/**
+	 * 
+	 * @param strContainer
+	 * @param keyword
+	 * @param thead
+	 * @return
+	 */
 	public static String analysisString(List<String> strContainer, String keyword,Thead thead) {
 		String c = "";
 
@@ -270,7 +270,10 @@ public class POIUtils {
 								keu = str[0]+","+(Integer.parseInt(str[1])+1);
 							}
 							c = trows.get(keu);
-							if(c!=null&&c.length()>30){c = "******"; continue;}
+							if(c!=null&&c.length()>30||c==null){
+								c = "******"; 
+								continue;
+							}
 							break a;
 						}
 					}
@@ -325,12 +328,12 @@ public class POIUtils {
 		List<Map<String, String>> tableTexts = new ArrayList<Map<String, String>>();
 		try {
 			InputStream in = new FileInputStream(new File(path));
-			if (path.endsWith(".doc")) {
+			if (path.endsWith(Constants.FileType.doc.getName())) {
 				HWPFDocument word2003 = new HWPFDocument(in);
 				texts = getWord2003ParagraphsText(word2003);
 				tableTexts = convert2003Table(word2003);
 				word2003.close();
-			} else if (path.endsWith("docx")) {
+			} else if (path.endsWith(Constants.FileType.docx.getName())) {
 				XWPFDocument word2007 = new XWPFDocument(in);
 				texts = getWord2007ParagraphsText(word2007);
 				tableTexts = convert2007Table(word2007);
@@ -348,33 +351,7 @@ public class POIUtils {
 		}
 	}
 
-	/**
-	 * 重写word 操作
-	 * 
-	 */
-	public Map<Integer, Map<Integer, String>> getTextExtractor(String path) {
-		String buffer = "";
-		try {
-			InputStream in = new FileInputStream(new File(path));
-			if (path.endsWith(".doc")) {
-				HWPFDocument word2003 = new HWPFDocument(in);
-				WordExtractor ex = new WordExtractor(word2003);
-				buffer = ex.getText();
-				ex.close();
-			} else if (path.endsWith("docx")) {
-				XWPFDocument word2007 = new XWPFDocument(in);
-				POIXMLTextExtractor extractor = new XWPFWordExtractor(word2007);
-				buffer = extractor.getText();
-				extractor.close();
-			} else {
-				System.err.println("此 [ " + path + " ] 不是word文件！");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return null;
-	}
+	
 
 	public static List<String> getWord2003ParagraphsText(HWPFDocument word2003) {
 		List<String> allParagraphsText = new ArrayList<String>();
@@ -397,21 +374,6 @@ public class POIUtils {
 		List<String> allParagraphsText = new ArrayList<String>();
 		String buffer = "";
 		if (word2007 != null) {
-//			List<XWPFParagraph> paragraphs = word2007.getParagraphs();
-//			for (XWPFParagraph xwpfParagraph : paragraphs) {
-//				String conStr = xwpfParagraph.getParagraphText();
-//				conStr = conStr.replaceAll("\\s", ""); // 匹配任何空白字符，包括空格、制表符、换页符等等
-//				if ("".equals(conStr)) {
-//					continue;
-//				}
-//				String splitor = "，";
-//				if (conStr.indexOf(splitor) != -1) {
-//					allParagraphsText.addAll(CommonUtils.strSplit2List(conStr, splitor));
-//				} else {
-//					allParagraphsText.add(conStr);
-//				}
-//
-//			}
 			POIXMLTextExtractor extractor = new XWPFWordExtractor(word2007);
 			buffer = extractor.getText();
 			String c[] = buffer.split("\r|\n");

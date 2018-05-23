@@ -33,7 +33,7 @@
 			<th rule = "content"  type="text"  title="年均气温" key="平均气温是" ></th>
 			<th rule = "content"  type="text"  title="平均风速" key="平均风速是"></th>
 			<th rule = "content"  type="text"  title="平均风功率密度" key='平均风功率密度为' ></th>
-			<th rule = "content"  type="text"  title="机组容量（MW）"></th>
+			<th rule = "content"  type="text"  title="机组容量（MW）" key="总容量为"></th>
 			<th rule = "content"  type="text"  title="机组配置"></th>
 			<th rule = "content"  type="text"  title="机型要求" key="机型为"></th>
 			<th rule = "content"  type="text"  title="机型的安全等级" key='安全等级是'></th>
@@ -69,7 +69,7 @@
 				<th rule = "content" type="text" title="主机数量" key="台数" content-type='table' direction="v" />
 				
 				<!--提取投标文件-*-技术中的无明显特征词  -->
-				<th rule = "content" type="text" title="厂家备注">
+				<th rule = "content" type="text" title="厂家备注" key="结论是">
 					
 				</th>
 				

@@ -186,6 +186,7 @@ public class FileAnalyzer {
 				keyword = thead.getTitle();
 			}
 			if("table".equals(thead.getContentType())){
+				
 				maches = POIUtils.analysisTableString(ready2AnalyTables, keyword,thead);
 			}else{
 				if(CommonUtils.indexOf(keyword, new String[]{"是","以","为","应为"})){
