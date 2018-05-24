@@ -249,7 +249,12 @@ public class FileAnalyzer {
 					children.add(customFile);
 					if(child.isFile()){					
 						customFile.setFolder(false);
-						POIUtils.setCustomFileContent(customFile);
+						try {
+							POIUtils.setCustomFileContent(customFile);
+						} catch (NoSuchMethodException e) {
+							System.out.println("path---->" + customFile.getAbsolutePath());
+							e.printStackTrace();
+						}
 					}else{
 						customFile.setFolder(true);
 						listAllFile(allFile, child, level+1,customFile);

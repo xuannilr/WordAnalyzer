@@ -322,7 +322,7 @@ public class POIUtils {
 		return cs;
 	}
 
-	public static void setCustomFileContent(CustomFile customFile) {
+	public static void setCustomFileContent (CustomFile customFile) throws NoSuchMethodException {
 		String path = customFile.getAbsolutePath();
 		List<String> texts = new ArrayList<String>();
 		List<Map<String, String>> tableTexts = new ArrayList<Map<String, String>>();
@@ -341,12 +341,16 @@ public class POIUtils {
 			} else {
 				System.err.println("此 [ " + path + " ] 不是word文件！");
 			}
-		} catch (FileNotFoundException e) {
+		} 
+		catch (FileNotFoundException e) {
 			e.printStackTrace();
+			System.out.println("------"+ path);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}catch (Exception e) {
-			
+			System.out.println("------"+ path);
+		}
+		catch (Exception e) {
+			System.out.println("------"+ path);
 		} finally {
 			customFile.setParagrathsText(texts);
 			customFile.setTablesParagraphsText(tableTexts);
