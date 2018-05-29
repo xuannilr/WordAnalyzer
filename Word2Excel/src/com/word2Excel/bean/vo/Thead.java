@@ -1,6 +1,12 @@
 package com.word2Excel.bean.vo;
 
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.dom4j.Element;
+
+import com.word2Excel.util.CommonUtils;
 
 public class Thead {
 	String rule ;
@@ -11,8 +17,14 @@ public class Thead {
 	String level;
 	String sukey ;
 	String direction;
+	List<Enumeration>  enumeration;
 	
-	
+	public List<Enumeration> getEnumeration() {
+		return enumeration;
+	}
+	public void setEnumeration(List<Enumeration> enumeration) {
+		this.enumeration = enumeration;
+	}
 	public String getLevel() {
 		return level;
 	}
@@ -63,6 +75,7 @@ public class Thead {
 	public void setDirection(String direction) {
 		this.direction = direction;
 	}
+	
 	public Thead(Element ele){
 		this();
 		if(ele!=null){
@@ -74,6 +87,14 @@ public class Thead {
 			this.level = ele.attributeValue("level");
 			this.sukey= ele.attributeValue("sukey");
 			this.direction = ele.attributeValue("direction");
+			List <Element> eumertations =  ele.elements("enumeration");
+			if(!CommonUtils.isNull(eumertations)){
+				this.enumeration = new ArrayList<Enumeration>();
+				for(Element eumer :eumertations){
+					this.enumeration.add(new Enumeration(eumer));
+				}
+			}
+			
 		}
 	}
 	public Thead(){

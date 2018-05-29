@@ -7,7 +7,6 @@ public class Constants {
 	public  final static String TYPE_INVITATION_FOR_BIDS = "01-招标文件";
 	public  final static String TYPE_TENDER = "02-投标文件";   
 	
-	
 	public  final static String TYPE_BUSINESS = "商务部分";
 	
 	/**
@@ -29,17 +28,12 @@ public class Constants {
 		public String getName() {
 			return name;
 		}
-		public void setName(String name) {
-			this.name = name;
-		}
-		
 	}
 	public static enum FileType{
 		doc("doc"),
 		docx("docx"),
 		txt("txt"),
 		excel("xlsx");
-		
 		private String name;
 		FileType( String name) {
 			this.name = name;
@@ -63,17 +57,14 @@ public class Constants {
 		public String getName() {
 			return name;
 		}
-		public void setName(String name) {
-			this.name = name;
-		}
 	}
 	
 	public final static String[] RULES_TYPE ={
-			"folder","content"
-			}; 
+		"folder","content"
+	}; 
 	
 	public static enum Regex{
-		number("^[0-9]+");
+		number("^(\\-|\\+)?\\d+(\\.\\d+)?");  //正数、负数、和小数
 		private String name;
 		Regex( String name) {
 			this.name = name;
@@ -81,15 +72,21 @@ public class Constants {
 		public String getName() {
 			return name;
 		}
-		public void setName(String name) {
+	}
+	
+	public static enum DataType{
+		number("number"),
+		text("text"),
+		enumeration("enumeration");  
+		private String name;
+		DataType( String name) {
 			this.name = name;
 		}
-		
+		public String getName() {
+			return name;
+		}
 	}
+	
 	public  final static String  PATTERN  = "^[\\(（][^\\(（]+[\\)）]$"; //匹配 " () "
 	public  final static String  PATTERN1  = "\\S+(:){1,}\\S+|\\S+(：){1,}\\S+"; //匹配 " **:** "
-	
-	
-	
-	
 }

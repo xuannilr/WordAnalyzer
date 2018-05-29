@@ -8,10 +8,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.POIXMLTextExtractor;
@@ -201,6 +203,23 @@ public class POIUtils {
 		}
 
 		return c;
+	}
+	
+	public static String analysisString(List<String> strContainer, String [] enumerations) {
+		int initialCapacity = 0;
+		if(enumerations!=null&&enumerations.length>0){
+			initialCapacity = enumerations.length;
+		}
+		Set<String> result = new HashSet<String>(initialCapacity);
+		String c = "";
+		for (String string : strContainer) {
+			int index = CommonUtils.indexOf(string, enumerations);
+			if(index!=-1){
+				result.add(enumerations[index]);
+			}
+		}
+		
+		return result.toString();
 	}
 	/**
 	 * 

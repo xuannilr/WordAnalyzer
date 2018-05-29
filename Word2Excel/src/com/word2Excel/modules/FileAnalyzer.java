@@ -22,6 +22,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.word2Excel.bean.CustomFile;
+import com.word2Excel.bean.vo.Enumeration;
 import com.word2Excel.bean.vo.Group;
 import com.word2Excel.bean.vo.ProjectItem;
 import com.word2Excel.bean.vo.Thead;
@@ -131,7 +132,6 @@ public class FileAnalyzer {
 						List<String> ready2AnalyParagraphs = new ArrayList<String>();
 						List<Map<String,String>> ready2AnalyTables = new ArrayList<Map<String,String>>();
 						for(CustomFile doc :docFiles){
-							//if(doc.getName().indexOf(Constants.TYPE_BUSINESS)==-1){continue;}
 							ready2AnalyParagraphs.addAll(doc.getParagrathsText()); 
 							ready2AnalyTables.addAll(doc.getTablesParagraphsText());
 						}
@@ -190,12 +190,22 @@ public class FileAnalyzer {
 				
 				maches = POIUtils.analysisTableString(ready2AnalyTables, keyword,thead);
 			}else{
-				if(CommonUtils.indexOf(keyword, new String[]{"是","以","为","应为"})){
+				if(thead.getDataType().equals(Constants.DataType.enumeration.getName())){
+					List<Enumeration> es = thead.getEnumeration();
+					String[] s =  new String[es.size()]; 
+					int i =0 ;
+					for(Enumeration e :es){
+						s[i] = e.getValue();
+						++i;
+					}
+					maches = POIUtils.analysisString(ready2AnalyParagraphs , s);
+				}else if(CommonUtils.indexOf(keyword, new String[]{"是","以","为","应为"})!=-1){
 					keyword = keyword.substring(0, keyword.length()-1);
 					maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword ,thead);
 				}else{					
 					maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword, Constants.PATTERN1,thead);
 				}
+				
 			}	
 			templist.add(maches);
 		}
