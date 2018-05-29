@@ -72,6 +72,20 @@ public class Constants {
 			"folder","content"
 			}; 
 	
+	public static enum Regex{
+		number("^[0-9]+");
+		private String name;
+		Regex( String name) {
+			this.name = name;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		
+	}
 	public  final static String  PATTERN  = "^[\\(（][^\\(（]+[\\)）]$"; //匹配 " () "
 	public  final static String  PATTERN1  = "\\S+(:){1,}\\S+|\\S+(：){1,}\\S+"; //匹配 " **:** "
 	

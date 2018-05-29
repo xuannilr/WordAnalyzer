@@ -53,14 +53,15 @@ public class POIUtils {
 	 * @throws InvalidFormatException
 	 */
 	public static Map<Integer, String> readDataFromExcel(File excel) {
-		Map<Integer, String> map = new HashMap<Integer, String>();
+		
+		Map<Integer, Map<Integer,String>> allSheetTitles = new HashMap<Integer, Map<Integer,String>>();
 		try {
 			InputStream in = new FileInputStream(excel);
 			Workbook workbook = WorkbookFactory.create(in);
 			Sheet sheet = null;
 			for (int i = 0; i < workbook.getNumberOfSheets(); i++) {// 获取每个Sheet表
 				sheet = (Sheet) workbook.getSheetAt(i);
-
+				Map<Integer, String> map = new HashMap<Integer, String>();
 				Row row = sheet.getRow(0);
 				if (row != null) {
 					for (int k = 0; k < row.getLastCellNum(); k++) {// getLastCellNum，是获取最后一个不为空的列是第几个
@@ -71,6 +72,7 @@ public class POIUtils {
 						}
 					}
 				}
+				allSheetTitles.put(i, map);
 				System.out.println("读取sheet表：" + workbook.getSheetName(i) + " 完成");
 			}
 			in.close();
@@ -83,7 +85,8 @@ public class POIUtils {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return map;
+		return allSheetTitles.get(0);
+		
 	}
 
 	/**
@@ -251,9 +254,10 @@ public class POIUtils {
 	public static String analysisTableString(List< Map<String,String>> strContainer, String keyword,Thead thead) {
 		String c = "";
 		boolean direction = "h".equals(thead.getDirection())? false: true;
+		boolean isNum = "number".equals(thead.getDataType())? true : false;
 		if (!CommonUtils.isNull(strContainer)) {
 			Iterator<Map<String, String>> it = strContainer.iterator();
-			a:while (it.hasNext()) {
+			while (it.hasNext()) {
 				Map<String,String> trows = it.next();
 				if(trows!=null&&trows.size()>0){
 					Iterator<Entry<String, String>> tablesIt = trows.entrySet().iterator(); 
@@ -270,11 +274,23 @@ public class POIUtils {
 								keu = str[0]+","+(Integer.parseInt(str[1])+1);
 							}
 							c = trows.get(keu);
-							if(c!=null&&c.length()>30||c==null){
+							if(c==null||c.length()>30){
 								c = "******"; 
-								continue;
+								continue ;
 							}
-							break a;
+							if(isNum){
+//								System.out.println(c);
+//								if(thead.getTitle().equals("切入风速")){
+//									System.err.println("11111111");
+//								}
+								if(c.matches(Constants.Regex.number.getName())){
+									return c;
+								}else{
+									continue ;
+								}
+							}else{
+								return c;
+							}
 						}
 					}
 				}
@@ -283,7 +299,13 @@ public class POIUtils {
 		}
 		return c;
 	}
-
+	public List<String> filterExtractor(List< Map<String,String>> strContainer, String keyword[]){
+		
+		
+		
+		
+		return null;
+	}
 	/**
 	 * 获取文档的 text 文本
 	 * 
@@ -344,12 +366,9 @@ public class POIUtils {
 		} 
 		catch (FileNotFoundException e) {
 			e.printStackTrace();
-			System.out.println("------"+ path);
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.out.println("------"+ path);
-		}
-		catch (Exception e) {
+		}catch (Exception e) {
 			System.out.println("------"+ path);
 		} finally {
 			customFile.setParagrathsText(texts);

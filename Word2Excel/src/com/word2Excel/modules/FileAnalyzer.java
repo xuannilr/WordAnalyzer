@@ -147,6 +147,7 @@ public class FileAnalyzer {
 						for(CustomFile tf :tenderFiles){  ////
 							if(tf.isFolder()){
 								List<CustomFile> docFiles =  getDocsByName(tf);
+								System.out.println("file num-->"+docFiles.size());
 								List<String> ready2AnalyParagraphs = new ArrayList<String>();
 								List<Map<String,String>> ready2AnalyTables = new ArrayList<Map<String,String>>();
 								for (CustomFile doc : docFiles) {  //取得所有 待解析字符集合
