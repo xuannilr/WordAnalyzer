@@ -185,11 +185,14 @@ public class FileAnalyzer {
 			String keyword = thead.getKey();
 			if(keyword == null|| "".equals(keyword)){
 				keyword = thead.getTitle();
+				if(keyword.equals("招标人")){
+					System.out.println(key);
+				}
 			}
 			if("table".equals(thead.getContentType())){
-				
 				maches = POIUtils.analysisTableString(ready2AnalyTables, keyword,thead);
 			}else{
+				
 				if(thead.getDataType().equals(Constants.DataType.enumeration.getName())){
 					List<Enumeration> es = thead.getEnumeration();
 					String[] s =  new String[es.size()]; 
@@ -205,7 +208,6 @@ public class FileAnalyzer {
 				}else{					
 					maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword, Constants.PATTERN1,thead);
 				}
-				
 			}	
 			templist.add(maches);
 		}

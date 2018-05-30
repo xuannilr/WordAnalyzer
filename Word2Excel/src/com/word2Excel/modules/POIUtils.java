@@ -218,8 +218,8 @@ public class POIUtils {
 				result.add(enumerations[index]);
 			}
 		}
-		
-		return result.toString();
+		c = result.toString();
+		return c;
 	}
 	/**
 	 * 
@@ -368,14 +368,13 @@ public class POIUtils {
 		List<String> texts = new ArrayList<String>();
 		List<Map<String, String>> tableTexts = new ArrayList<Map<String, String>>();
 		try {
-			InputStream in = new FileInputStream(new File(path));
 			if (path.endsWith(Constants.FileType.doc.getName())) {
-				HWPFDocument word2003 = new HWPFDocument(in);
+				HWPFDocument word2003 = new HWPFDocument(new FileInputStream(new File(path)));
 				texts = getWord2003ParagraphsText(word2003);
 				tableTexts = convert2003Table(word2003);
 				word2003.close();
 			} else if (path.endsWith(Constants.FileType.docx.getName())) {
-				XWPFDocument word2007 = new XWPFDocument(in);
+				XWPFDocument word2007 = new XWPFDocument(new FileInputStream(new File(path)));
 				texts = getWord2007ParagraphsText(word2007);
 				tableTexts = convert2007Table(word2007);
 				word2007.close();
@@ -394,8 +393,6 @@ public class POIUtils {
 			customFile.setTablesParagraphsText(tableTexts);
 		}
 	}
-
-	
 
 	public static List<String> getWord2003ParagraphsText(HWPFDocument word2003) {
 		List<String> allParagraphsText = new ArrayList<String>();
@@ -422,10 +419,11 @@ public class POIUtils {
 			buffer = extractor.getText();
 			String c[] = buffer.split("\r|\n");
 			for (String string : c) {
-				if ("".equals(string) || string.length() > 30) {
+				String s = string.trim().replaceAll("\\s", "");
+				if ("".equals(s) || s.length() > 50) {
 					continue;
 				}
-				allParagraphsText.add(string.trim().replaceAll("\\s", ""));
+				allParagraphsText.add(s);
 			}
 		}
 		return allParagraphsText;
