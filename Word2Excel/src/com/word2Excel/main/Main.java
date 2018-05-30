@@ -32,7 +32,7 @@ public class Main {
 		String path = (String) properties.get("sourceFilePath");
 		String targetPath = (String) properties.get("targetFile");
 		FileAnalyzer fa =  new FileAnalyzer(path, targetPath);
-		Map<String, Map<Integer, List<String>>> map = fa.handleResult(fa.resolvingXml(xmlFile));
+		List<Map<Integer, List<String>>> map = fa.handleResult(fa.resolvingXml(xmlFile));
 		
 		POIUtils.writeData2Excel(new File(targetPath), map);
 		long end = System.currentTimeMillis();

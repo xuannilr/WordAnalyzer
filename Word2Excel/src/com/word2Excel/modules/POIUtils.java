@@ -101,7 +101,7 @@ public class POIUtils {
 	 * @throws EncryptedDocumentException
 	 * @throws InvalidFormatException
 	 */
-	public static boolean writeData2Excel(File excel, Map<String, Map<Integer, List<String>>> data) {
+	public static boolean writeData2Excel(File excel, List< Map<Integer, List<String>>> data) {
 		InputStream in = null;
 		Workbook workbook = null;
 		Boolean isSuccessful = false;
@@ -111,10 +111,10 @@ public class POIUtils {
 			Sheet sheet = null;
 			sheet = (Sheet) workbook.getSheetAt(0);
 			int rowIndex = 1;
-			Iterator<Entry<String, Map<Integer, List<String>>>> it = data.entrySet().iterator();
+			Iterator<Map<Integer, List<String>>> it = data.iterator();
 			while (it.hasNext()) {
-				Entry<String, Map<Integer, List<String>>> entry = it.next();
-				Map<Integer, List<String>> rowData = entry.getValue();
+				//Entry<String, Map<Integer, List<String>>> entry = it.next();
+				Map<Integer, List<String>> rowData = it.next();;
 				Iterator<Entry<Integer, List<String>>> rowDataIt = rowData.entrySet().iterator();
 				int maxRowindex = 1;
 				while (rowDataIt.hasNext()) {
@@ -184,7 +184,11 @@ public class POIUtils {
 				String s[] = temp.indexOf(Constants.Splitor.colon_zh.getName()) == -1
 						? temp.split(Constants.Splitor.colon.getName())
 						: temp.split(Constants.Splitor.colon_zh.getName());
+				
 				if (!CommonUtils.isNull(s) && s.length > 0) {
+					if(s.length>2){
+						continue;
+					}
 					c = s[1];
 					if(!CommonUtils.isNull(sukey)){
 						if(c.indexOf(sukey)==-1){
@@ -204,6 +208,12 @@ public class POIUtils {
 
 		return c;
 	}
+	/**
+	 *  枚举解析
+	 * @param strContainer
+	 * @param enumerations
+	 * @return
+	 */
 	
 	public static String analysisString(List<String> strContainer, String [] enumerations) {
 		int initialCapacity = 0;
@@ -222,7 +232,7 @@ public class POIUtils {
 		return c;
 	}
 	/**
-	 * 
+	 * 简单词法切分解析
 	 * @param strContainer
 	 * @param keyword
 	 * @param thead
@@ -298,13 +308,22 @@ public class POIUtils {
 								continue ;
 							}
 							if(isNum){
-//								System.out.println(c);
 //								if(thead.getTitle().equals("切入风速")){
 //									System.err.println("11111111");
 //								}
 								if(c.matches(Constants.Regex.number.getName())){
 									return c;
-								}else{
+								}
+								else if(c.trim().equals(thead.getUnit())){
+									if(direction){
+										keu = (Integer.parseInt(str[0])+2)+","+str[1];
+									}else{
+										keu = str[0]+","+(Integer.parseInt(str[1])+2);
+									}
+									c = trows.get(keu);
+									return c;
+								} 
+								else {
 									continue ;
 								}
 							}else{

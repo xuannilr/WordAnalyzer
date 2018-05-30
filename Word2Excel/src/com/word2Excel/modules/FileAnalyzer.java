@@ -115,8 +115,8 @@ public class FileAnalyzer {
 	 * @throws EncryptedDocumentException 
 	 */
 	
-	public Map<String, Map<Integer, List<String>>> handleResult(List<ProjectItem> pis) {
-		Map <String ,Map<Integer,List<String>>> map  = new HashMap<String, Map<Integer,List<String>>>();
+	public List< Map<Integer, List<String>>> handleResult(List<ProjectItem> pis) {
+		List <Map<Integer,List<String>>> list  = new ArrayList< Map<Integer,List<String>>>();
 		List<CustomFile> mainFolders =  getMainFolder(Constants.TYPE_INVITATION_FOR_BIDS);
 		
 		for (CustomFile customFile : mainFolders) {
@@ -163,9 +163,9 @@ public class FileAnalyzer {
 				}
 				
 			}
-			map.put(customFile.getName(),ready2writing );
+			list.add(ready2writing );
 		}
-		return map;
+		return list;
 	}
 	private void analyzerRules(Thead thead,Map<Integer, List<String>> ready2writing,List<Map<String,String>> ready2AnalyTables,List<String>   ready2AnalyParagraphs,CustomFile invatation){
 		int key = getMapKeyByValue(dataFromExcel, thead.getTitle());
@@ -185,9 +185,6 @@ public class FileAnalyzer {
 			String keyword = thead.getKey();
 			if(keyword == null|| "".equals(keyword)){
 				keyword = thead.getTitle();
-				if(keyword.equals("招标人")){
-					System.out.println(key);
-				}
 			}
 			if("table".equals(thead.getContentType())){
 				maches = POIUtils.analysisTableString(ready2AnalyTables, keyword,thead);
