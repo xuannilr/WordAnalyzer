@@ -64,7 +64,8 @@ public class Constants {
 	}; 
 	
 	public static enum Regex{
-		number("^(\\-|\\+)?\\d+(\\.\\d+)?");  //正数、负数、和小数
+		number("^(\\-|\\+)?\\d+(\\.\\d+)?"),  //正数、负数、和小数
+		lang_zh("[\u4e00-\u9fa5]{1,}");
 		private String name;
 		Regex( String name) {
 			this.name = name;

@@ -186,9 +186,6 @@ public class POIUtils {
 						: temp.split(Constants.Splitor.colon_zh.getName());
 				
 				if (!CommonUtils.isNull(s) && s.length > 0) {
-					if(s.length>2){
-						continue;
-					}
 					c = s[1];
 					if(!CommonUtils.isNull(sukey)){
 						if(c.indexOf(sukey)==-1){
@@ -198,6 +195,12 @@ public class POIUtils {
 					if (c.length() > 30) {
 						c = "";
 						continue;
+					}
+					if(c.equals(keyword)){
+						continue;
+					}
+					if(keyword.equals("联系人")){
+						c = c.replaceAll("(电话)|(\\d{3}-\\d{8}|\\d{4}-\\d{7})","");
 					}
 					break;
 				}
@@ -231,6 +234,7 @@ public class POIUtils {
 		c = result.toString();
 		return c;
 	}
+
 	/**
 	 * 简单词法切分解析
 	 * @param strContainer
@@ -261,6 +265,9 @@ public class POIUtils {
 					continue;
 				}
 				c = temp.substring(beginIndex, endIndex);
+				if(thead.getUnit()!=null){
+					c = c.replaceAll(Constants.Regex.lang_zh.getName(), "");
+				}
 				if(!"".equals(c)){
 					break;
 				}
@@ -400,7 +407,6 @@ public class POIUtils {
 			} else {
 				System.err.println("此 [ " + path + " ] 不是word文件！");
 			}
-			System.out.println("-->[ " + path + " ]<--");
 		} 
 		catch (FileNotFoundException e) {
 			e.printStackTrace();

@@ -205,9 +205,18 @@ public class FileAnalyzer {
 				}else{					
 					maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword, Constants.PATTERN1,thead);
 				}
+				
 			}	
 			templist.add(maches);
 		}
+	}
+	/**
+	 * 
+	 * @param target  目标词语
+	 * @param container
+	 */
+	private void associationSercher(String target,List<String> container){
+		
 	}
 	private List<CustomFile> getDocsByName(CustomFile parnet){
 		List <CustomFile> files = new ArrayList<CustomFile>();
