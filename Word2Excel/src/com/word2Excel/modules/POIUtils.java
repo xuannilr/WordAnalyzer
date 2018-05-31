@@ -382,37 +382,44 @@ public class POIUtils {
 		return cs;
 	}
 
-	public static void setCustomFileContent (CustomFile customFile) throws NoSuchMethodException {
+	public static void setCustomFileContent (CustomFile customFile)  {
 		String path = customFile.getAbsolutePath();
 		List<String> texts = new ArrayList<String>();
 		List<Map<String, String>> tableTexts = new ArrayList<Map<String, String>>();
 		try {
 			if (path.endsWith(Constants.FileType.doc.getName())) {
-				HWPFDocument word2003 = new HWPFDocument(new FileInputStream(new File(path)));
+				HWPFDocument word2003 = getWord2003(path);
 				texts = getWord2003ParagraphsText(word2003);
 				tableTexts = convert2003Table(word2003);
 				word2003.close();
 			} else if (path.endsWith(Constants.FileType.docx.getName())) {
-				XWPFDocument word2007 = new XWPFDocument(new FileInputStream(new File(path)));
+				XWPFDocument word2007 = getWord2007(path);
 				texts = getWord2007ParagraphsText(word2007);
 				tableTexts = convert2007Table(word2007);
 				word2007.close();
 			} else {
 				System.err.println("此 [ " + path + " ] 不是word文件！");
 			}
+			System.out.println("-->[ " + path + " ]<--");
 		} 
 		catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}catch (NoSuchMethodException e) {
+			System.out.println("--222---"+ path);
 		}catch (Exception e) {
-			System.out.println("------"+ path);
 		} finally {
 			customFile.setParagrathsText(texts);
 			customFile.setTablesParagraphsText(tableTexts);
 		}
 	}
-
+	public  static HWPFDocument getWord2003(String path) throws NoSuchMethodException, FileNotFoundException, IOException{
+		return  new HWPFDocument(new FileInputStream(new File(path)));
+	}
+	public  static XWPFDocument getWord2007(String path) throws NoSuchMethodException, FileNotFoundException, IOException{
+		return new XWPFDocument(new FileInputStream(new File(path)));
+	}
 	public static List<String> getWord2003ParagraphsText(HWPFDocument word2003) {
 		List<String> allParagraphsText = new ArrayList<String>();
 		String buffer = "";
@@ -429,7 +436,7 @@ public class POIUtils {
 		}
 		return allParagraphsText;
 	}
-
+	
 	public static List<String> getWord2007ParagraphsText(XWPFDocument word2007) {
 		List<String> allParagraphsText = new ArrayList<String>();
 		String buffer = "";

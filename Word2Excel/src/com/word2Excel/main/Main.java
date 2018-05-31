@@ -34,7 +34,7 @@ public class Main {
 		FileAnalyzer fa =  new FileAnalyzer(path, targetPath);
 		List<Map<Integer, List<String>>> map = fa.handleResult(fa.resolvingXml(xmlFile));
 		
-		POIUtils.writeData2Excel(new File(targetPath), map);
+		//POIUtils.writeData2Excel(new File(targetPath), map);
 		long end = System.currentTimeMillis();
 		System.out.println();
 		System.out.println("运行时间: "+ (end - start ));
