@@ -89,7 +89,7 @@ public class FileAnalyzer {
 					children.add(customFile);
 					if(child.isFile()){					
 						customFile.setFolder(false);
-						//customFile.setContentText(POIUtils.getAllTextFromWord(child));
+						POIUtils.setCustomFileContent(customFile);
 					}else{
 						customFile.setFolder(true);
 						listAllFile(allFile, child, level+1,customFile);
@@ -188,11 +188,13 @@ public class FileAnalyzer {
 				for (Group group : groups) {
 					if(Constants.TYPE_INVITATION_FOR_BIDS.equals(group.getKey())){  //01-招标文件
 						List<CustomFile> docFiles =  getDocsByName(invatation);
-						List<String> read2Analy = new ArrayList<String>();
+						List<String> ready2AnalyParagraphs = new ArrayList<String>();
+						List<Map<String,String>> ready2AnalyTables = new ArrayList<Map<String,String>>();
+						
 						for(CustomFile doc :docFiles){
 							if(doc.getName().indexOf(Constants.TYPE_BUSINESS)==-1){continue;}
-							read2Analy.addAll(POIUtils.getAllTextFromWord(doc.getAbsolutePath())); 
-							System.out.println("|------>"+doc.getName());
+							ready2AnalyParagraphs.addAll(doc.getParagrathsText()); 
+							ready2AnalyTables.addAll(doc.getTablesParagraphsText());
 						}
 						List<Thead > tenderThs = group.getTheads();
 						for (Thead thead : tenderThs) {
@@ -206,7 +208,6 @@ public class FileAnalyzer {
 								int level = CommonUtils.str2Int(thead.getLevel());
 								CustomFile  cfile = getCustomFileByLevel(getParentsFile(invatation), level);
 								String fileName =  cfile.getName();
-								System.err.println("fileName-->"+ fileName);
 								templist.add(fileName);
 							}else if(Constants.RuleType.content.getName().equals(thead.getRule())){
 									String maches =  "***";
@@ -214,7 +215,7 @@ public class FileAnalyzer {
 									if(keyword == null|| "".equals(keyword)){
 										keyword = thead.getTitle();
 									}
-									maches = POIUtils.analysisString(read2Analy, keyword, Constants.PATTERN1);
+									maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword, Constants.PATTERN1);
 									System.out.println(maches);
 									templist.add(maches);
 							}
@@ -227,13 +228,13 @@ public class FileAnalyzer {
 						List<Thead > tenderThs = group.getTheads();
 						
 						for(CustomFile tf :tenderFiles){  ////
-							System.out.println("|------|------>"+tf.getName());
 							List<CustomFile> docFiles =  getDocsByName(tf);
 							
-							List<String> read2Analy = new ArrayList<String>();
+							List<String> ready2AnalyParagraphs = new ArrayList<String>();
+							List<Map<String,String>> ready2AnalyTables = new ArrayList<Map<String,String>>();
 							for (CustomFile doc : docFiles) {  //取得所有 待解析字符集合
-								System.out.println("|------>"+doc.getName());
-								read2Analy.addAll(POIUtils.getAllTextFromWord(doc.getAbsolutePath())); 
+								ready2AnalyParagraphs.addAll(doc.getParagrathsText());
+								ready2AnalyTables.addAll(doc.getTablesParagraphsText());
 							}	
 							
 							for (Thead thead : tenderThs) {
@@ -251,7 +252,12 @@ public class FileAnalyzer {
 									if(keyword == null|| "".equals(keyword)){
 										keyword = thead.getTitle();
 									}
-									maches = POIUtils.analysisString(read2Analy, keyword, Constants.PATTERN1);
+									if("table".equals(thead.getContentType())){
+										maches = POIUtils.analysisTableString(ready2AnalyTables, keyword, Constants.PATTERN1);
+									}else{
+										maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword, Constants.PATTERN1);
+										
+									}
 									if(thead.getSukey()!=null&& !"".equals(thead.getSukey())){
 										if(maches.indexOf(thead.getSukey())!=-1){
 											templist.add(maches);
