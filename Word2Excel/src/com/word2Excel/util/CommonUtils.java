@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 通用方法
+ * 閫氱敤鏂规硶
  * @author Administrator
  *
  */
@@ -69,12 +69,13 @@ public class CommonUtils {
 	}
 	
 	
-	public static boolean indexOf(String str,String []key){
-		boolean a = false;
+	public static int indexOf(String str,String []key){
+		int a = -1;
 		if(key!=null&&key.length>0){
-			for (String string : key) {
+			for (int i =0 ; i<key.length;i++) {
+				String string = key[i];
 				if(str.indexOf(string)!=-1){
-					a = true;
+					a = i;
 				}
 			}
 		}

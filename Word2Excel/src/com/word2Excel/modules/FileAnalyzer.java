@@ -22,11 +22,13 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.word2Excel.bean.CustomFile;
+import com.word2Excel.bean.vo.Enumeration;
 import com.word2Excel.bean.vo.Group;
 import com.word2Excel.bean.vo.ProjectItem;
 import com.word2Excel.bean.vo.Thead;
 import com.word2Excel.util.CommonUtils;
 import com.word2Excel.util.Constants;
+import com.word2Excel.util.LoggerUtil;
 
 /**
  * 
@@ -37,16 +39,18 @@ public class FileAnalyzer {
 	private File root;
 	private File excel;
 	Map<Integer, String> dataFromExcel = null;
-	private int fid = 0;
-	
-	public FileAnalyzer(){}
+	LoggerUtil logger = null;
+	private FileAnalyzer(){
+		this.logger =  new LoggerUtil(this.getClass());
+	}
 	public FileAnalyzer(String path,String excelPath){
+		this();
 		this.root = new File(path);
 		this.excel = new File(excelPath);
 		this.dataFromExcel = POIUtils.readDataFromExcel(this.excel);
 	}
 	/**
-	 * ½«file ÏÂ ËùÓĞÎÄ¼ş×ª»¯ Îª ×Ô¶¨ÒåÎÄ¼ş  
+	 * å°†file ä¸‹ æ‰€æœ‰æ–‡ä»¶è½¬åŒ– ä¸º è‡ªå®šä¹‰æ–‡ä»¶  
 	 * @param file   
 	 * @return
 	 */
@@ -58,74 +62,12 @@ public class FileAnalyzer {
 		customFile.setId(0);
 		customFile.setName(file.getName());
 		customFile.setAbsolutePath(file.getAbsolutePath());
+		customFile.setFolder(file.isDirectory());
 		allFile.add(customFile);
 		level++;
 		listAllFile(allFile, file ,level,customFile);
 		return allFile;
 	}
-	/**
-	 * µİ¹é ±éÀú ËùÓĞÎÄ¼ş
-	 * @param allFile
-	 * @param file
-	 * @param level
-	 * @param parent
-	 */
-	private void listAllFile(List <CustomFile> allFile, File file,int level,CustomFile parent ){
-		if(file.isDirectory()){			
-			File [] files =  file.listFiles();
-			if(files!=null&&files.length>0){
-				List<CustomFile> children =  new ArrayList<CustomFile>(files.length);
-				for (File child : files) {
-					if(child.isHidden()){
-						continue;
-					}
-					CustomFile customFile = new CustomFile();
-					customFile.setLevel(level);
-					customFile.setId(0);
-					customFile.setName(child.getName());
-					customFile.setAbsolutePath(child.getAbsolutePath());
-					customFile.setParent(parent);
-					allFile.add(customFile);
-					children.add(customFile);
-					if(child.isFile()){					
-						customFile.setFolder(false);
-						POIUtils.setCustomFileContent(customFile);
-					}else{
-						customFile.setFolder(true);
-						listAllFile(allFile, child, level+1,customFile);
-					}
-				}
-				parent.setChildren(children);
-			}
-		}	
-		
-	}
-	private CustomFile getCustomFileByLevel(List<CustomFile> list , int level){
-		if(!CommonUtils.isNull(list)){
-			for (CustomFile customFile : list) {
-				if(customFile.getLevel()==level){
-					return customFile;
-				}
-			}
-		}
-		return null;
-	}
-	
-	private List<CustomFile> getDocsByName(CustomFile parnet){
-		List <CustomFile> files = new ArrayList<CustomFile>();
-		List <CustomFile> children = new ArrayList<CustomFile>();
-		getChildrenFile(children, parnet);
-		for (CustomFile customFile : children) {
-			if(customFile.getName().endsWith(Constants.FileType.doc.getName())||
-					customFile.getName().endsWith(Constants.FileType.docx.getName())){
-				files.add(customFile);
-				
-			}
-		}
-		
-		return  files;
-	}
-	
 	/**
 	 * 
 	 * @param ruleMapping
@@ -173,112 +115,169 @@ public class FileAnalyzer {
 	 * @throws EncryptedDocumentException 
 	 */
 	
-	public Map<String, Map<Integer, List<String>>> handleResult(List<ProjectItem> pis) {
-		Map <String ,Map<Integer,List<String>>> map  = new HashMap<String, Map<Integer,List<String>>>();
+	public List< Map<Integer, List<String>>> handleResult(List<ProjectItem> pis) {
+		List <Map<Integer,List<String>>> list  = new ArrayList< Map<Integer,List<String>>>();
 		List<CustomFile> mainFolders =  getMainFolder(Constants.TYPE_INVITATION_FOR_BIDS);
 		
 		for (CustomFile customFile : mainFolders) {
 			System.out.println(customFile.getName());
-			fid++;
-			CustomFile invatation = getCustomFileByName(customFile.getChildren(),Constants.TYPE_INVITATION_FOR_BIDS); //ÕĞ±êÄ¿Â¼
-			CustomFile tender = getCustomFileByName(customFile.getChildren(),Constants.TYPE_TENDER); //  Í¶±êÄ¿Â¼
+			CustomFile invatation = getCustomFileByName(customFile.getChildren(),Constants.TYPE_INVITATION_FOR_BIDS); //æ‹›æ ‡ç›®å½•
+			CustomFile tender = getCustomFileByName(customFile.getChildren(),Constants.TYPE_TENDER); //  æŠ•æ ‡ç›®å½•
 			Map<Integer, List<String>> ready2writing = new HashMap<Integer, List<String>>();	
 			for (ProjectItem projectItem : pis) {
 				List<Group> groups = projectItem.getGroups();
 				for (Group group : groups) {
-					if(Constants.TYPE_INVITATION_FOR_BIDS.equals(group.getKey())){  //01-ÕĞ±êÎÄ¼ş
+					if(Constants.TYPE_INVITATION_FOR_BIDS.equals(group.getKey())){  //01-æ‹›æ ‡æ–‡ä»¶
 						List<CustomFile> docFiles =  getDocsByName(invatation);
 						List<String> ready2AnalyParagraphs = new ArrayList<String>();
 						List<Map<String,String>> ready2AnalyTables = new ArrayList<Map<String,String>>();
-						
 						for(CustomFile doc :docFiles){
-							if(doc.getName().indexOf(Constants.TYPE_BUSINESS)==-1){continue;}
 							ready2AnalyParagraphs.addAll(doc.getParagrathsText()); 
 							ready2AnalyTables.addAll(doc.getTablesParagraphsText());
 						}
 						List<Thead > tenderThs = group.getTheads();
 						for (Thead thead : tenderThs) {
-							int key = getMapKeyByValue(dataFromExcel, thead.getTitle());
-							List<String> templist =  ready2writing.get(key);
-							if(CommonUtils.isNull(templist)){
-								templist = new ArrayList<String>();
-								ready2writing.put(key, templist);
-							}
-							if(Constants.RuleType.folder.getName().equals(thead.getRule())){
-								int level = CommonUtils.str2Int(thead.getLevel());
-								CustomFile  cfile = getCustomFileByLevel(getParentsFile(invatation), level);
-								String fileName =  cfile.getName();
-								templist.add(fileName);
-							}else if(Constants.RuleType.content.getName().equals(thead.getRule())){
-									String maches =  "***";
-									String keyword = thead.getKey();
-									if(keyword == null|| "".equals(keyword)){
-										keyword = thead.getTitle();
-									}
-									maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword, Constants.PATTERN1);
-									System.out.println(maches);
-									templist.add(maches);
-							}
-							
+							analyzerRules(thead,ready2writing, ready2AnalyTables, ready2AnalyParagraphs,invatation);
 						}
-						
 					}
-					else{   //02-Í¶±êÎÄ¼ş
+					else{   //02-æŠ•æ ‡æ–‡ä»¶
 						List<CustomFile> tenderFiles = getCustomFileByLevelOffset(tender,2); 
 						List<Thead > tenderThs = group.getTheads();
 						
 						for(CustomFile tf :tenderFiles){  ////
-							List<CustomFile> docFiles =  getDocsByName(tf);
-							
-							List<String> ready2AnalyParagraphs = new ArrayList<String>();
-							List<Map<String,String>> ready2AnalyTables = new ArrayList<Map<String,String>>();
-							for (CustomFile doc : docFiles) {  //È¡µÃËùÓĞ ´ı½âÎö×Ö·û¼¯ºÏ
-								ready2AnalyParagraphs.addAll(doc.getParagrathsText());
-								ready2AnalyTables.addAll(doc.getTablesParagraphsText());
-							}	
-							
-							for (Thead thead : tenderThs) {
-								int key = getMapKeyByValue(dataFromExcel, thead.getTitle());
-								List<String> templist =  ready2writing.get(key);
-								
-								if(CommonUtils.isNull(templist)){
-									templist = new ArrayList<String>();
-									ready2writing.put(key, templist);
-								}
-								if(Constants.RuleType.content.getName().equals(thead.getRule())){
-									//TODO  ÄÚÈİ½âÎö
-									String maches =  "----";
-									String keyword = thead.getKey();
-									if(keyword == null|| "".equals(keyword)){
-										keyword = thead.getTitle();
-									}
-									if("table".equals(thead.getContentType())){
-										maches = POIUtils.analysisTableString(ready2AnalyTables, keyword, Constants.PATTERN1);
-									}else{
-										maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword, Constants.PATTERN1);
-										
-									}
-									if(thead.getSukey()!=null&& !"".equals(thead.getSukey())){
-										if(maches.indexOf(thead.getSukey())!=-1){
-											templist.add(maches);
-										} else {
-											continue;
-										}
-									}else{
-										templist.add(maches);
-									}
-								}
-								
+							if(tf.isFolder()){
+								List<CustomFile> docFiles =  getDocsByName(tf);
+								System.out.println("file num-->"+docFiles.size());
+								List<String> ready2AnalyParagraphs = new ArrayList<String>();
+								List<Map<String,String>> ready2AnalyTables = new ArrayList<Map<String,String>>();
+								for (CustomFile doc : docFiles) {  //å–å¾—æ‰€æœ‰ å¾…è§£æå­—ç¬¦é›†åˆ
+									ready2AnalyParagraphs.addAll(doc.getParagrathsText());
+									ready2AnalyTables.addAll(doc.getTablesParagraphsText());
+								}	
+								for (Thead thead : tenderThs) {
+									analyzerRules(thead, ready2writing, ready2AnalyTables, ready2AnalyParagraphs,null);
+								}	
 							}
-							
 						}
 					}
 				}
 				
 			}
-			map.put(customFile.getName(),ready2writing );
+			list.add(ready2writing );
 		}
-		return map;
+		return list;
+	}
+	private void analyzerRules(Thead thead,Map<Integer, List<String>> ready2writing,List<Map<String,String>> ready2AnalyTables,List<String>   ready2AnalyParagraphs,CustomFile invatation){
+		int key = getMapKeyByValue(dataFromExcel, thead.getTitle());
+		List<String> templist =  ready2writing.get(key);
+		if(CommonUtils.isNull(templist)){
+			templist = new ArrayList<String>();
+			ready2writing.put(key, templist);
+		}
+		if(Constants.RuleType.folder.getName().equals(thead.getRule())){
+			int level = CommonUtils.str2Int(thead.getLevel());
+			CustomFile  cfile = getCustomFileByLevel(getParentsFile(invatation), level);
+			String fileName =  cfile.getName();
+			templist.add(fileName);
+		}else if(Constants.RuleType.content.getName().equals(thead.getRule())){
+			//TODO  å†…å®¹è§£æ
+			String maches =  "";
+			String keyword = thead.getKey();
+			if(keyword == null|| "".equals(keyword)){
+				keyword = thead.getTitle();
+			}
+			if("table".equals(thead.getContentType())){
+				maches = POIUtils.analysisTableString(ready2AnalyTables, keyword,thead);
+			}else{
+				
+				if(thead.getDataType().equals(Constants.DataType.enumeration.getName())){
+					List<Enumeration> es = thead.getEnumeration();
+					String[] s =  new String[es.size()]; 
+					int i =0 ;
+					for(Enumeration e :es){
+						s[i] = e.getValue();
+						++i;
+					}
+					maches = POIUtils.analysisString(ready2AnalyParagraphs , s);
+				}else if(CommonUtils.indexOf(keyword, new String[]{"æ˜¯","ä»¥","ä¸º","åº”ä¸º"})!=-1){
+					keyword = keyword.substring(0, keyword.length()-1);
+					maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword ,thead);
+				}else{					
+					maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword, Constants.PATTERN1,thead);
+				}
+				
+			}	
+			templist.add(maches);
+		}
+	}
+	/**
+	 * 
+	 * @param target  ç›®æ ‡è¯è¯­
+	 * @param container
+	 */
+	private void associationSercher(String target,List<String> container){
+		
+	}
+	private List<CustomFile> getDocsByName(CustomFile parnet){
+		List <CustomFile> files = new ArrayList<CustomFile>();
+		List <CustomFile> children = new ArrayList<CustomFile>();
+		getChildrenFile(children, parnet);
+		for (CustomFile customFile : children) {
+			if(customFile.getName().endsWith(Constants.FileType.doc.getName())||
+					customFile.getName().endsWith(Constants.FileType.docx.getName())){
+				files.add(customFile);
+				
+			}
+		}
+		
+		return  files;
+	}
+	private CustomFile getCustomFileByLevel(List<CustomFile> list , int level){
+		if(!CommonUtils.isNull(list)){
+			for (CustomFile customFile : list) {
+				if(customFile.getLevel()==level){
+					return customFile;
+				}
+			}
+		}
+		return null;
+	}
+	/**
+	 * é€’å½’ éå† æ‰€æœ‰æ–‡ä»¶
+	 * @param allFile
+	 * @param file
+	 * @param level
+	 * @param parent
+	 */
+	private void listAllFile(List <CustomFile> allFile, File file,int level,CustomFile parent ){
+		if(file.isDirectory()){			
+			File [] files =  file.listFiles();
+			if(files!=null&&files.length>0){
+				List<CustomFile> children =  new ArrayList<CustomFile>(files.length);
+				for (File child : files) {
+					if(child.isHidden()){
+						continue;
+					}
+					CustomFile customFile = new CustomFile();
+					customFile.setLevel(level);
+					customFile.setId(0);
+					customFile.setName(child.getName());
+					customFile.setAbsolutePath(child.getAbsolutePath());
+					customFile.setParent(parent);
+					allFile.add(customFile);
+					children.add(customFile);
+					if(child.isFile()){					
+						customFile.setFolder(false);
+						POIUtils.setCustomFileContent(customFile);
+					}else{
+						customFile.setFolder(true);
+						listAllFile(allFile, child, level+1,customFile);
+					}
+				}
+				parent.setChildren(children);
+			}
+		}	
+		
 	}
 	private Integer getMapKeyByValue(Map<Integer,String> map,String v){
 		Iterator<Entry<Integer, String>> it = map.entrySet().iterator();

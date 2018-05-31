@@ -8,16 +8,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.poi.EncryptedDocumentException;
-import org.apache.poi.POIXMLDocument;
 import org.apache.poi.POIXMLTextExtractor;
 import org.apache.poi.hwpf.HWPFDocument;
-import org.apache.poi.hwpf.HWPFOldDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.hwpf.usermodel.Paragraph;
 import org.apache.poi.hwpf.usermodel.Range;
@@ -26,8 +26,6 @@ import org.apache.poi.hwpf.usermodel.TableCell;
 import org.apache.poi.hwpf.usermodel.TableIterator;
 import org.apache.poi.hwpf.usermodel.TableRow;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
-import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -39,15 +37,15 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
-import org.apache.xmlbeans.XmlException;
 
 import com.word2Excel.bean.CustomFile;
+import com.word2Excel.bean.vo.Thead;
 import com.word2Excel.util.CommonUtils;
 import com.word2Excel.util.Constants;
 
 public class POIUtils {
 	/**
-	 * ¥”Excel÷–ªÒ»°  ˝æ›
+	 * ‰ªéExcel‰∏≠Ëé∑Âèñ Êï∞ÊçÆ
 	 * 
 	 * @param excel
 	 * @return
@@ -57,35 +55,44 @@ public class POIUtils {
 	 * @throws InvalidFormatException
 	 */
 	public static Map<Integer, String> readDataFromExcel(File excel) {
-		Map<Integer, String> map = new HashMap<Integer, String>();
+		
+		Map<Integer, Map<Integer,String>> allSheetTitles = new HashMap<Integer, Map<Integer,String>>();
 		try {
 			InputStream in = new FileInputStream(excel);
 			Workbook workbook = WorkbookFactory.create(in);
 			Sheet sheet = null;
-			for (int i = 0; i < workbook.getNumberOfSheets(); i++) {// ªÒ»°√ø∏ˆSheet±Ì
+			for (int i = 0; i < workbook.getNumberOfSheets(); i++) {// Ëé∑ÂèñÊØè‰∏™SheetË°®
 				sheet = (Sheet) workbook.getSheetAt(i);
-
+				Map<Integer, String> map = new HashMap<Integer, String>();
 				Row row = sheet.getRow(0);
 				if (row != null) {
-					for (int k = 0; k < row.getLastCellNum(); k++) {// getLastCellNum£¨ «ªÒ»°◊Ó∫Û“ª∏ˆ≤ªŒ™ø’µƒ¡– «µ⁄º∏∏ˆ
-						if (row.getCell(k) != null) { // getCell ªÒ»°µ•‘™∏Ò ˝æ›
+					for (int k = 0; k < row.getLastCellNum(); k++) {// getLastCellNumÔºåÊòØËé∑ÂèñÊúÄÂêé‰∏Ä‰∏™‰∏ç‰∏∫Á©∫ÁöÑÂàóÊòØÁ¨¨Âá†‰∏™
+						if (row.getCell(k) != null) { // getCell Ëé∑ÂèñÂçïÂÖÉÊ†ºÊï∞ÊçÆ
 							map.put(k, row.getCell(k).toString().replaceAll("\n", ""));
 						} else {
 							System.out.print("\t");
 						}
 					}
 				}
-				System.out.println("∂¡»°sheet±Ì£∫" + workbook.getSheetName(i) + " ÕÍ≥…");
+				allSheetTitles.put(i, map);
+				System.out.println("ËØªÂèñsheetË°®Ôºö" + workbook.getSheetName(i) + " ÂÆåÊàê");
 			}
 			in.close();
-		} catch (EncryptedDocumentException | InvalidFormatException | IOException e) {
+		} catch (EncryptedDocumentException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (InvalidFormatException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return map;
+		return allSheetTitles.get(0);
+		
 	}
 
 	/**
-	 * ¥”Excel÷–ªÒ»°  ˝æ›
+	 * ‰ªéExcel‰∏≠Ëé∑Âèñ Êï∞ÊçÆ
 	 * 
 	 * @param excel
 	 * @return
@@ -94,7 +101,7 @@ public class POIUtils {
 	 * @throws EncryptedDocumentException
 	 * @throws InvalidFormatException
 	 */
-	public static boolean writeData2Excel(File excel, Map<String, Map<Integer, List<String>>> data) {
+	public static boolean writeData2Excel(File excel, List< Map<Integer, List<String>>> data) {
 		InputStream in = null;
 		Workbook workbook = null;
 		Boolean isSuccessful = false;
@@ -104,12 +111,11 @@ public class POIUtils {
 			Sheet sheet = null;
 			sheet = (Sheet) workbook.getSheetAt(0);
 			int rowIndex = 1;
-			Iterator<Entry<String, Map<Integer, List<String>>>> it = data.entrySet().iterator();
+			Iterator<Map<Integer, List<String>>> it = data.iterator();
 			while (it.hasNext()) {
-				Entry<String, Map<Integer, List<String>>> entry = it.next();
-				Map<Integer, List<String>> rowData = entry.getValue();
+				//Entry<String, Map<Integer, List<String>>> entry = it.next();
+				Map<Integer, List<String>> rowData = it.next();;
 				Iterator<Entry<Integer, List<String>>> rowDataIt = rowData.entrySet().iterator();
-
 				int maxRowindex = 1;
 				while (rowDataIt.hasNext()) {
 					Entry<Integer, List<String>> en = rowDataIt.next();
@@ -136,33 +142,39 @@ public class POIUtils {
 				rowIndex = maxRowindex;
 
 			}
-			FileOutputStream fo = new FileOutputStream(excel); //  ‰≥ˆµΩŒƒº˛
+			FileOutputStream fo = new FileOutputStream(excel); // ËæìÂá∫Âà∞Êñá‰ª∂
 			workbook.write(fo);
-			in.close();
 			fo.close();
+			in.close();
 			isSuccessful = true;
 			if (isSuccessful) {
-				System.out.println("–¥»Îsheet±Ì£∫" + workbook.getSheetName(0) + " ÕÍ≥…");
+				System.out.println("ÂÜôÂÖ•sheetË°®Ôºö" + workbook.getSheetName(0) + " ÂÆåÊàê");
 			} else {
-				System.out.println("–¥»Îsheet±Ì£∫" + workbook.getSheetName(0) + "  ß∞‹");
+				System.out.println("ÂÜôÂÖ•sheetË°®Ôºö" + workbook.getSheetName(0) + " Â§±Ë¥•");
 			}
-		} catch (EncryptedDocumentException | InvalidFormatException | IOException e) {
+		} catch (EncryptedDocumentException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (InvalidFormatException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return isSuccessful;
 	}
 
 	/**
-	 * ∑÷Œˆ¥øŒƒ±æƒ⁄»›
+	 * ÂàÜÊûêÁ∫ØÊñáÊú¨ÂÜÖÂÆπ
 	 * 
 	 * @param strContainer
 	 * @param keyword
 	 * @param pattern
 	 * @return
 	 */
-	public static String analysisString(List<String> strContainer, String keyword, String pattern) {
+	public static String analysisString(List<String> strContainer, String keyword, String pattern,Thead thead) {
 		String c = "";
-
+		String sukey = thead.getSukey(); 
 		for (String string : strContainer) {
 			if (string.indexOf(keyword) != -1 && string.trim().matches(pattern)) {
 				String temp = string.trim();
@@ -172,12 +184,91 @@ public class POIUtils {
 				String s[] = temp.indexOf(Constants.Splitor.colon_zh.getName()) == -1
 						? temp.split(Constants.Splitor.colon.getName())
 						: temp.split(Constants.Splitor.colon_zh.getName());
+				
 				if (!CommonUtils.isNull(s) && s.length > 0) {
 					c = s[1];
+					if(!CommonUtils.isNull(sukey)){
+						if(c.indexOf(sukey)==-1){
+							continue;
+						}
+					}
 					if (c.length() > 30) {
 						c = "";
 						continue;
 					}
+					if(c.equals(keyword)){
+						continue;
+					}
+					if(keyword.equals("ËÅîÁ≥ª‰∫∫")){
+						c = c.replaceAll("(ÁîµËØù)|(\\d{3}-\\d{8}|\\d{4}-\\d{7})","");
+					}
+					break;
+				}
+			} else {
+				continue;
+			}
+		}
+
+		return c;
+	}
+	/**
+	 *  Êûö‰∏æËß£Êûê
+	 * @param strContainer
+	 * @param enumerations
+	 * @return
+	 */
+	
+	public static String analysisString(List<String> strContainer, String [] enumerations) {
+		int initialCapacity = 0;
+		if(enumerations!=null&&enumerations.length>0){
+			initialCapacity = enumerations.length;
+		}
+		Set<String> result = new HashSet<String>(initialCapacity);
+		String c = "";
+		for (String string : strContainer) {
+			int index = CommonUtils.indexOf(string, enumerations);
+			if(index!=-1){
+				result.add(enumerations[index]);
+			}
+		}
+		c = result.toString();
+		return c;
+	}
+
+	/**
+	 * ÁÆÄÂçïËØçÊ≥ïÂàáÂàÜËß£Êûê
+	 * @param strContainer
+	 * @param keyword
+	 * @param thead
+	 * @return
+	 */
+	public static String analysisString(List<String> strContainer, String keyword,Thead thead) {
+		String c = "";
+
+		for (String string : strContainer) {
+			
+			if (string.indexOf(keyword) != -1) {
+				String temp = string.trim();
+				int beginIndex  = temp.indexOf(keyword) + keyword.length();
+				int length = temp.length();
+				int endIndex = temp.indexOf(Constants.Splitor.full_stop.getName(),beginIndex);
+				if(endIndex==-1){
+					endIndex = temp.indexOf(Constants.Splitor.comma_zh.getName(),beginIndex);
+				}
+				if(endIndex==-1){
+					endIndex = length;
+				}
+				if(beginIndex>=endIndex){
+					endIndex = length-1;
+				}
+				if(beginIndex>=length){
+					continue;
+				}
+				c = temp.substring(beginIndex, endIndex);
+				if(thead.getUnit()!=null){
+					c = c.replaceAll(Constants.Regex.lang_zh.getName(), "");
+				}
+				if(!"".equals(c)){
 					break;
 				}
 			} else {
@@ -189,19 +280,20 @@ public class POIUtils {
 	}
 
 	/**
-	 * ∑÷Œˆ ±Ì∏Ò÷–µƒƒ⁄»›
+	 * ÂàÜÊûê Ë°®Ê†º‰∏≠ÁöÑÂÜÖÂÆπ
 	 * 
 	 * @param strContainer
 	 * @param keyword
 	 * @param pattern
 	 * @return
 	 */
-	public static String analysisTableString(List< Map<String,String>> strContainer, String keyword, String pattern) {
+	public static String analysisTableString(List< Map<String,String>> strContainer, String keyword,Thead thead) {
 		String c = "";
-		String ks[]  = keyword.split("|"); 
+		boolean direction = "h".equals(thead.getDirection())? false: true;
+		boolean isNum = "number".equals(thead.getDataType())? true : false;
 		if (!CommonUtils.isNull(strContainer)) {
 			Iterator<Map<String, String>> it = strContainer.iterator();
-			a:while (it.hasNext()) {
+			while (it.hasNext()) {
 				Map<String,String> trows = it.next();
 				if(trows!=null&&trows.size()>0){
 					Iterator<Entry<String, String>> tablesIt = trows.entrySet().iterator(); 
@@ -211,9 +303,39 @@ public class POIUtils {
 						if(value.indexOf(keyword)!=-1){
 							String key = entry.getKey();
 							String str[] =  key.split(",");
-							String keu = (Integer.parseInt(str[0])+1)+","+str[1];
+							String keu = "";
+							if(direction){
+								keu = (Integer.parseInt(str[0])+1)+","+str[1];
+							}else{
+								keu = str[0]+","+(Integer.parseInt(str[1])+1);
+							}
 							c = trows.get(keu);
-							break a;
+							if(c==null||c.length()>30){
+								c = "******"; 
+								continue ;
+							}
+							if(isNum){
+//								if(thead.getTitle().equals("ÂàáÂÖ•È£éÈÄü")){
+//									System.err.println("11111111");
+//								}
+								if(c.matches(Constants.Regex.number.getName())){
+									return c;
+								}
+								else if(c.trim().equals(thead.getUnit())){
+									if(direction){
+										keu = (Integer.parseInt(str[0])+2)+","+str[1];
+									}else{
+										keu = str[0]+","+(Integer.parseInt(str[1])+2);
+									}
+									c = trows.get(keu);
+									return c;
+								} 
+								else {
+									continue ;
+								}
+							}else{
+								return c;
+							}
 						}
 					}
 				}
@@ -222,9 +344,15 @@ public class POIUtils {
 		}
 		return c;
 	}
-
+	public List<String> filterExtractor(List< Map<String,String>> strContainer, String keyword[]){
+		
+		
+		
+		
+		return null;
+	}
 	/**
-	 * ªÒ»°Œƒµµµƒ text Œƒ±æ
+	 * Ëé∑ÂèñÊñáÊ°£ÁöÑ text ÊñáÊú¨
 	 * 
 	 * @param doc
 	 * @return
@@ -245,7 +373,7 @@ public class POIUtils {
 				buffer = extractor.getText();
 				extractor.close();
 			} else {
-				System.err.println("¥À [ " + path + " ] ≤ª «wordŒƒº˛£°");
+				System.err.println("Ê≠§ [ " + path + " ] ‰∏çÊòØwordÊñá‰ª∂ÔºÅ");
 			}
 			String c[] = buffer.split("\r|\n");
 
@@ -261,63 +389,43 @@ public class POIUtils {
 		return cs;
 	}
 
-	public static void setCustomFileContent(CustomFile customFile) {
+	public static void setCustomFileContent (CustomFile customFile)  {
 		String path = customFile.getAbsolutePath();
 		List<String> texts = new ArrayList<String>();
 		List<Map<String, String>> tableTexts = new ArrayList<Map<String, String>>();
 		try {
-			InputStream in = new FileInputStream(new File(path));
-			if (path.endsWith(".doc")) {
-				HWPFDocument word2003 = new HWPFDocument(in);
+			if (path.endsWith(Constants.FileType.doc.getName())) {
+				HWPFDocument word2003 = getWord2003(path);
 				texts = getWord2003ParagraphsText(word2003);
 				tableTexts = convert2003Table(word2003);
 				word2003.close();
-			} else if (path.endsWith("docx")) {
-				XWPFDocument word2007 = new XWPFDocument(in);
+			} else if (path.endsWith(Constants.FileType.docx.getName())) {
+				XWPFDocument word2007 = getWord2007(path);
 				texts = getWord2007ParagraphsText(word2007);
 				tableTexts = convert2007Table(word2007);
 				word2007.close();
 			} else {
-				System.err.println("¥À [ " + path + " ] ≤ª «wordŒƒº˛£°");
+				System.err.println("Ê≠§ [ " + path + " ] ‰∏çÊòØwordÊñá‰ª∂ÔºÅ");
 			}
-		} catch (FileNotFoundException e) {
+		} 
+		catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}catch (NoSuchMethodException e) {
+			System.out.println("--222---"+ path);
+		}catch (Exception e) {
 		} finally {
 			customFile.setParagrathsText(texts);
 			customFile.setTablesParagraphsText(tableTexts);
 		}
 	}
-
-	/**
-	 * ÷ÿ–¥word ≤Ÿ◊˜
-	 * 
-	 */
-	public Map<Integer, Map<Integer, String>> getTextExtractor(String path) {
-		String buffer = "";
-		try {
-			InputStream in = new FileInputStream(new File(path));
-			if (path.endsWith(".doc")) {
-				HWPFDocument word2003 = new HWPFDocument(in);
-				WordExtractor ex = new WordExtractor(word2003);
-				buffer = ex.getText();
-				ex.close();
-			} else if (path.endsWith("docx")) {
-				XWPFDocument word2007 = new XWPFDocument(in);
-				POIXMLTextExtractor extractor = new XWPFWordExtractor(word2007);
-				buffer = extractor.getText();
-				extractor.close();
-			} else {
-				System.err.println("¥À [ " + path + " ] ≤ª «wordŒƒº˛£°");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return null;
+	public  static HWPFDocument getWord2003(String path) throws NoSuchMethodException, FileNotFoundException, IOException{
+		return  new HWPFDocument(new FileInputStream(new File(path)));
 	}
-
+	public  static XWPFDocument getWord2007(String path) throws NoSuchMethodException, FileNotFoundException, IOException{
+		return new XWPFDocument(new FileInputStream(new File(path)));
+	}
 	public static List<String> getWord2003ParagraphsText(HWPFDocument word2003) {
 		List<String> allParagraphsText = new ArrayList<String>();
 		String buffer = "";
@@ -326,7 +434,7 @@ public class POIUtils {
 			buffer = ex.getText();
 			String c[] = buffer.split("\r|\n");
 			for (String string : c) {
-				if ("".equals(string) || string.length() > 30) {
+				if ("".equals(string)) {
 					continue;
 				}
 				allParagraphsText.add(string.trim().replaceAll("\\s", ""));
@@ -334,34 +442,20 @@ public class POIUtils {
 		}
 		return allParagraphsText;
 	}
-
+	
 	public static List<String> getWord2007ParagraphsText(XWPFDocument word2007) {
 		List<String> allParagraphsText = new ArrayList<String>();
 		String buffer = "";
 		if (word2007 != null) {
-//			List<XWPFParagraph> paragraphs = word2007.getParagraphs();
-//			for (XWPFParagraph xwpfParagraph : paragraphs) {
-//				String conStr = xwpfParagraph.getParagraphText();
-//				conStr = conStr.replaceAll("\\s", ""); // ∆•≈‰»Œ∫Œø’∞◊◊÷∑˚£¨∞¸¿®ø’∏Ò°¢÷∆±Ì∑˚°¢ªª“≥∑˚µ»µ»
-//				if ("".equals(conStr)) {
-//					continue;
-//				}
-//				String splitor = "£¨";
-//				if (conStr.indexOf(splitor) != -1) {
-//					allParagraphsText.addAll(CommonUtils.strSplit2List(conStr, splitor));
-//				} else {
-//					allParagraphsText.add(conStr);
-//				}
-//
-//			}
 			POIXMLTextExtractor extractor = new XWPFWordExtractor(word2007);
 			buffer = extractor.getText();
 			String c[] = buffer.split("\r|\n");
 			for (String string : c) {
-				if ("".equals(string) || string.length() > 30) {
+				String s = string.trim().replaceAll("\\s", "");
+				if ("".equals(s) || s.length() > 50) {
 					continue;
 				}
-				allParagraphsText.add(string.trim().replaceAll("\\s", ""));
+				allParagraphsText.add(s);
 			}
 		}
 		return allParagraphsText;
@@ -380,23 +474,23 @@ public class POIUtils {
 			while (it.hasNext()) {
 				Map<String, String> tbContent = new HashMap<String, String>();
 				Table tb = (Table) it.next();
-				for (int i = 0; i < tb.numRows(); i++) { // ªÒ»° row
+				for (int i = 0; i < tb.numRows(); i++) { // Ëé∑Âèñ row
 
 					TableRow tr = tb.getRow(i);
 
-					for (int j = 0; j < tr.numCells(); j++) { // ªÒ»° cell
+					for (int j = 0; j < tr.numCells(); j++) { // Ëé∑Âèñ cell
 						TableCell td = tr.getCell(j);
 						StringBuilder tdCon = new StringBuilder();
-						for (int k = 0; k < td.numParagraphs(); k++) { // ªÒ»°
+						for (int k = 0; k < td.numParagraphs(); k++) { // Ëé∑Âèñ
 																		// cell
 																		// content
 							Paragraph para = td.getParagraph(k);
 							tdCon.append(para.text().trim());
 						}
-						String value = tdCon.toString().replaceAll("£∫", "").replaceAll("\n", ""); // ÃÊªª÷–Œƒ◊÷∑˚":"
+						String value = tdCon.toString().replaceAll("Ôºö", "").replaceAll("\n", ""); // ÊõøÊç¢‰∏≠ÊñáÂ≠óÁ¨¶":"
 																									// ,
-																									// ªª––"\n"
-						String key = i + "," + j; // ––¡–◊¯±Í
+																									// Êç¢Ë°å"\n"
+						String key = i + "," + j; // Ë°åÂàóÂùêÊ†á
 						tbContent.put(key, value);
 					}
 				}

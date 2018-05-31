@@ -4,21 +4,23 @@ public class Constants {
 	/**
 	 *   filter 
 	 */
-	public  final static String TYPE_INVITATION_FOR_BIDS = "01-ÕĞ±êÎÄ¼ş";
-	public  final static String TYPE_TENDER = "02-Í¶±êÎÄ¼ş";   
+	public  final static String TYPE_INVITATION_FOR_BIDS = "01-æ‹›æ ‡æ–‡ä»¶";
+	public  final static String TYPE_TENDER = "02-æŠ•æ ‡æ–‡ä»¶";   
 	
-	
-	public  final static String TYPE_BUSINESS = "ÉÌÎñ²¿·Ö";
+	public  final static String TYPE_BUSINESS = "å•†åŠ¡éƒ¨åˆ†";
 	
 	/**
 	 * 
-	 * ·Ö¸î·û
+	 * åˆ†å‰²ç¬¦
 	 *
 	 */
 	public  static enum Splitor{
 		colon(":"),
+		colon_zh("ï¼š"),
 		comma(","),
-		colon_zh("£º");
+		comma_zh("ï¼Œ"),
+		full_stop("ã€‚");   //å¥å·
+		
 		private String name;
 		Splitor(String name){
 			this.name = name;
@@ -26,17 +28,12 @@ public class Constants {
 		public String getName() {
 			return name;
 		}
-		public void setName(String name) {
-			this.name = name;
-		}
-		
 	}
 	public static enum FileType{
 		doc("doc"),
 		docx("docx"),
 		txt("txt"),
 		excel("xlsx");
-		
 		private String name;
 		FileType( String name) {
 			this.name = name;
@@ -60,19 +57,37 @@ public class Constants {
 		public String getName() {
 			return name;
 		}
-		public void setName(String name) {
-			this.name = name;
-		}
 	}
 	
 	public final static String[] RULES_TYPE ={
-			"folder","content"
-			}; 
+		"folder","content"
+	}; 
 	
-	public  final static String  PATTERN  = "^[\\(£¨][^\\(£¨]+[\\)£©]$"; //Æ¥Åä " () "
-	public  final static String  PATTERN1  = "\\S+(:){1,}\\S+|\\S+(£º){1,}\\S+"; //Æ¥Åä " **:** "
+	public static enum Regex{
+		number("^(\\-|\\+)?\\d+(\\.\\d+)?"),  //æ­£æ•°ã€è´Ÿæ•°ã€å’Œå°æ•°
+		lang_zh("[\u4e00-\u9fa5]{1,}");
+		private String name;
+		Regex( String name) {
+			this.name = name;
+		}
+		public String getName() {
+			return name;
+		}
+	}
 	
+	public static enum DataType{
+		number("number"),
+		text("text"),
+		enumeration("enumeration");  
+		private String name;
+		DataType( String name) {
+			this.name = name;
+		}
+		public String getName() {
+			return name;
+		}
+	}
 	
-	
-	
+	public  final static String  PATTERN  = "^[\\(ï¼ˆ][^\\(ï¼ˆ]+[\\)ï¼‰]$"; //åŒ¹é… " () "
+	public  final static String  PATTERN1  = "\\S+(:){1,}\\S+|\\S+(ï¼š){1,}\\S+"; //åŒ¹é… " **:** "
 }
