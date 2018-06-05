@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dictionary>
+		<item>
+			<key>北车风电有限公司</key>
+			<value>CWT2000-D103</value>
+		</item>
+		
+		<item>
+			<key>北京京城新能源有限公司</key>
+			<values>
+				<value>FC113-2000</value>
+				<value>FC86-2000</value>
+			</values>	
+		</item>
+		
+		<item>
+			<key>东方电气股份有限公司</key>
+			<values>
+				<value>DF82-1500kW</value>
+				<value>DF87-1500kW</value>
+			</values>	
+		</item>
+						
+		<item>
+			<key>歌美飒风电（天津）有限公司</key>
+			<values>
+				<value>G97-2MW</value>
+			</values>	
+		</item>
+		
+		<item>
+			<key>广东明阳风电产业集团有限公司</key>
+			<values>
+				<value>MY2.0-110/85(S)常温型</value>
+				<value>MYSCD3.0-120/90</value>
+			</values>	
+		</item>				
+						
+		<item>
+			<key>国电联合动力技术有限公司</key>
+			<values>
+				<value>UP2000-115-S（低温型）</value>
+			</values>	
+		</item>					
+					
+		<item>
+			<key>宁夏银星能源风电设备制造有限公司</key>
+			<values>
+				<value>MWT100/2.5MW</value>
+			</values>	
+		</item>	
+		
+		<item>
+			<key>三一重型能源装备有限公司</key>
+			<values>
+				<value>SE10520低温型</value>
+				<value>SE11520低温型</value>
+				<value>SE8215</value>
+			</values>	
+		</item>				
+						
+		<item>
+			<key>上海电气风电设备有限公司</key>
+			<values>
+				<value>W2000C-99-80</value>
+				<value>W2000C-93-80</value>
+			</values>	
+		</item>					
+		
+		<item>
+			<key>沈阳华创风能有限公司</key>
+			<values>
+				<value>CCWE-2000/103.D</value>
+				<value>CCWE-1500/93.DF</value>
+				<value>CCWE-2000/116.DF</value>
+			</values>	
+		</item>		  			
+				
+		<item>
+			<key>湘电风能有限公司</key>
+			<values>
+				<value>XE100-2000</value>
+				<value>XE122-2500</value>
+				<value>XE112-2000</value>
+				<value>XE105-2000</value>
+			</values>	
+		</item>
+		
+		<item>
+			<key>新疆金风科技股份有限公司</key>
+			<values>
+				<value>GW82/1500</value>
+			</values>	
+		</item>						
+						
+		<item>
+			<key>许继集团有限公司</key>
+			<values>
+				<value>WT2000/100</value>
+			</values>	
+		</item>	
+		
+		<item>
+			<key>许继集团有限公司</key>
+			<values>
+				<value>WT2000/100</value>
+			</values>	
+		</item>					
+		
+		<item>
+			<key>浙江运达风电股份有限公司</key>
+			<values>
+				<value>WD115-2000-90</value>
+			</values>	
+		</item>					
+</dictionary>
