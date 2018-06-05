@@ -6,10 +6,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -39,15 +43,37 @@ public class FileAnalyzer {
 	private File root;
 	private File excel;
 	Map<Integer, String> dataFromExcel = null;
+	private Map<String,Set<String>> mapDuce = null; // <投标公司名,机型>
 	LoggerUtil logger = null;
 	private FileAnalyzer(){
 		this.logger =  new LoggerUtil(this.getClass());
+		mapDuce =  new HashMap<String,Set<String>>();
 	}
 	public FileAnalyzer(String path,String excelPath){
 		this();
 		this.root = new File(path);
 		this.excel = new File(excelPath);
 		this.dataFromExcel = POIUtils.readDataFromExcel(this.excel);
+	}
+	public void setMapDuce(HashMap<String,Set<String>> mapDuce){
+		this.mapDuce = mapDuce;
+	}
+	public void setMapDuce(String filename){
+		if(this.mapDuce == null){
+			this.mapDuce = new HashMap<String, Set<String>>();
+		}
+		Document document = getXmlFile(filename);
+		Element root = document.getRootElement();
+		List<Element> items = root.elements("items");
+		for (Element element : items) {
+			List <Element>values = element.elements("value");
+			Set <String> set = new HashSet<String>();
+			for (Element val : values) {
+				set.add(val.getTextTrim());
+			}
+			String key = element.elementTextTrim("key");
+			mapDuce.put(key, set);
+		}
 	}
 	/**
 	 * 将file 下 所有文件转化 为 自定义文件  
@@ -68,13 +94,9 @@ public class FileAnalyzer {
 		listAllFile(allFile, file ,level,customFile);
 		return allFile;
 	}
-	/**
-	 * 
-	 * @param ruleMapping
-	 */
-	@SuppressWarnings("unchecked")
-	public List<ProjectItem> resolvingXml(String ruleMapping){
-		List< ProjectItem> pis = new ArrayList<ProjectItem>();
+	
+	public Document getXmlFile(String file){
+		Document document = null;
 		try {
 			SAXReader saxReader = new SAXReader();
 			saxReader.setValidation(false);
@@ -86,23 +108,32 @@ public class FileAnalyzer {
 				}
 			});
 			saxReader.setEncoding("UTF-8");
-			Document document = saxReader.read(this.getClass().getResourceAsStream("/" + ruleMapping));
-			Element root = document.getRootElement();
-			List<Element> projects = root.elements("project");
-			if(!CommonUtils.isNull(projects)){
-				
-				for (Element element : projects) {
-					ProjectItem pi = new ProjectItem();
-					List<Element> group = element.elements("group");
-					for (Element element2 : group) {
-						pi.getGroups().add(new Group(element2));
-					}
-					pis.add(pi);
-				}
-			}
+			document = saxReader.read(this.getClass().getResourceAsStream("/" + file));
 		} catch (DocumentException e) {
 			e.printStackTrace();
-		} 
+		}
+		return document;
+	}
+	/**
+	 * 
+	 * @param ruleMapping
+	 */
+	@SuppressWarnings("unchecked")
+	public List<ProjectItem> resolvingXml(String ruleMapping){
+		List< ProjectItem> pis = new ArrayList<ProjectItem>();
+		Document document = getXmlFile(ruleMapping);
+		Element root = document.getRootElement();
+		List<Element> projects = root.elements("project");
+		if(!CommonUtils.isNull(projects)){
+			for (Element element : projects) {
+				ProjectItem pi = new ProjectItem();
+				List<Element> group = element.elements("group");
+				for (Element element2 : group) {
+					pi.getGroups().add(new Group(element2));
+				}
+				pis.add(pi);
+			}
+		}
 		return pis;
 	}
 	
@@ -141,6 +172,7 @@ public class FileAnalyzer {
 						}
 					}
 					else{   //02-投标文件
+						
 						List<CustomFile> tenderFiles = getCustomFileByLevelOffset(tender,2); 
 						List<Thead > tenderThs = group.getTheads();
 						
@@ -188,8 +220,23 @@ public class FileAnalyzer {
 			}
 			if("table".equals(thead.getContentType())){
 				maches = POIUtils.analysisTableString(ready2AnalyTables, keyword,thead);
-			}else{
+			}if("undefinition".equals(thead.getContentType())){
 				
+				String tempMache  = POIUtils.analysisString(ready2AnalyParagraphs, keyword ,thead);
+				//maches = POIUtils.analysisString(ready2AnalyParagraphs, keyword, Constants.PATTERN1,thead);
+				Set<String > sset = this.mapDuce.get("");
+				if(tempMache.matches(Constants.Regex.lang_en.getName())){
+					String pattern = Constants.Regex.lang_en.getName();
+					Pattern r = Pattern.compile(pattern);
+					Matcher m = r.matcher(tempMache);
+					if(sset.contains(tempMache)){
+						maches = tempMache;
+					}else{
+						sset.add(tempMache);
+					}
+				}
+				
+			}else{
 				if(thead.getDataType().equals(Constants.DataType.enumeration.getName())){
 					List<Enumeration> es = thead.getEnumeration();
 					String[] s =  new String[es.size()]; 

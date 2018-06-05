@@ -13,9 +13,7 @@
 			
 			<th rule = "folder"  level="2" type="text" isImportant="ture" title="工程名+标段名+数量"></th>
 			
-			<th rule = "content"  type="text"  title="项目经理"  key='联系人'>
-				<keyword>联系人</keyword>
-			</th>
+			<th rule = "content"  type="text"  title="项目经理"  key='联系人'></th>
 
 			<th rule = "content"  type="text"  title="项目地理坐标" key='地理位置为'  >
 				<keyword> 地理坐标</keyword>
@@ -33,7 +31,7 @@
 			<th rule = "content"  type="text"  title="年均气温" key="平均气温是" ></th>
 			<th rule = "content"  type="text"  title="平均风速" key="平均风速是"></th>
 			<th rule = "content"  type="text"  title="平均风功率密度" key='平均风功率密度为' ></th>
-			<th rule = "content"  type="text"  title="机组容量（MW）" key="总容量为"></th>
+			<th rule = "content"  type="text"  title="机组容量（MW）" key="总容量为" unit="MW"></th>
 			<th rule = "content"  type="text"  title="机组配置"></th>
 			<th rule = "content"  type="text"  title="机型要求" key="机型为"></th>
 			<th rule = "content"  type="text"  title="机型的安全等级" key='安全等级是'></th>
@@ -49,7 +47,7 @@
 				<th rule = "content" type="text" title="投标人名称" key="投标人" sukey="公司"/>
 				
 				<!-- 提取投标文件-*-价格中的投标人栏目下方表格投标总价 -->
-				<th rule = "content" type="text" title="投标风机型号" key="投标机型" content-type='table' direction="v"/>
+				<th rule = "undefinition" type="text" title="投标风机型号" key="投标机型" content-type='table' direction="v"/>
 				                                                                                                                                                          
 				
 				<!-- 提取投标文件-02-投标文件-设备技术性能要求 -->
@@ -60,7 +58,7 @@
 				</th>
 				
 				<!--提取投标文件-*-技术中的轮毂高度为特征词  -->
-				<th rule = "content" type="number" title="轮毂高度（m）" key="轮毂高度" content-type="table"  direction="h"/>
+				<th rule = "content" type="number" title="轮毂高度（m）" key="轮毂高度" content-type="table"  direction="h" unit="m"/>
 				
 				<!--提取投标文件-*-价格中的投标人栏目下方表格-价格汇总表  -->
 				<th rule = "content" type="number" title="风电主机单价（万元）" key="单价" content-type='table' direction="v" />
@@ -69,7 +67,7 @@
 				<th rule = "content" type="number" title="主机数量" key="台数" content-type='table' direction="v" />
 				
 				<th rule = "content" type="number" title="风轮直径" content-type="table"  direction="h" unit="m"/>
-				<th rule = "content" type="number" title="扫风面积" content-type="table"  direction="h" unit="m²"/>
+				<th rule = "content" type="number" title="扫风面积" content-type="table"  direction="h" unit="m2"/>
 				<th rule = "content" type="number" title="额定风速" content-type="table"  direction="h" unit="m/s"/>
 				<th rule = "content" type="number" title="切入风速" content-type="table"  direction="h" unit="m/s"/>
 				<th rule = "content" type="number" title="切出风速" content-type="table"  direction="h" unit="m/s"/>

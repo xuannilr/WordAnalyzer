@@ -266,7 +266,7 @@ public class POIUtils {
 				}
 				c = temp.substring(beginIndex, endIndex);
 				if(thead.getUnit()!=null){
-					c = c.replaceAll(Constants.Regex.lang_zh.getName(), "");
+					c = c.replaceAll(Constants.Regex.lang_zh.getName(), " ");
 				}
 				if(!"".equals(c)){
 					break;
@@ -289,7 +289,7 @@ public class POIUtils {
 	 */
 	public static String analysisTableString(List< Map<String,String>> strContainer, String keyword,Thead thead) {
 		String c = "";
-		boolean direction = "h".equals(thead.getDirection())? false: true;
+		boolean direction = "h".equals(thead.getDirection())? true : false;
 		boolean isNum = "number".equals(thead.getDataType())? true : false;
 		if (!CommonUtils.isNull(strContainer)) {
 			Iterator<Map<String, String>> it = strContainer.iterator();
@@ -305,19 +305,16 @@ public class POIUtils {
 							String str[] =  key.split(",");
 							String keu = "";
 							if(direction){
-								keu = (Integer.parseInt(str[0])+1)+","+str[1];
-							}else{
 								keu = str[0]+","+(Integer.parseInt(str[1])+1);
+							}else{
+								keu = (Integer.parseInt(str[0])+1)+","+str[1];
 							}
 							c = trows.get(keu);
-							if(c==null||c.length()>30){
+							if(c==null||c.trim().equals("")||c.length()>30){
 								c = "******"; 
 								continue ;
 							}
 							if(isNum){
-//								if(thead.getTitle().equals("切入风速")){
-//									System.err.println("11111111");
-//								}
 								if(c.matches(Constants.Regex.number.getName())){
 									return c;
 								}
@@ -514,7 +511,10 @@ public class POIUtils {
 																					// return
 		for (XWPFTable xwpfTable : tables) {
 			Map<String, String> tabMap = new HashMap<String, String>();
-			int maxRow = xwpfTable.getRowBandSize();
+			int maxRow = xwpfTable.getNumberOfRows();
+			
+			//xwpfTable.getRowBandSize();
+			
 			for (int row = 0; row < maxRow; row++) {
 				XWPFTableRow tablerow = xwpfTable.getRow(row);
 				int maxCol = tablerow.getTableCells().size();
@@ -522,16 +522,64 @@ public class POIUtils {
 					XWPFTableCell cell = tablerow.getCell(col);
 					List<XWPFParagraph> paragragh = cell.getParagraphs();
 					StringBuilder sb = new StringBuilder();
-					String value = sb.toString();
+					//String value = sb.toString();
 					String key = row + "," + col;
 					for (XWPFParagraph xwpfParagraph : paragragh) {
 						sb.append(xwpfParagraph.getParagraphText().replaceAll("\\s", ""));
 					}
-					tabMap.put(key, value);
+					tabMap.put(key, sb.toString());
 				}
 			}
 			tableList.add(tabMap);
 		}
 		return tableList;
+	}
+	
+	/**
+	 * excel 抽取单元格信息
+	 * 
+	 * Map<Sheetname, Map<index,value>>
+	 */
+	public static Map<String, Map<String,String>> excelExtractor(InputStream in) {
+		
+		Map<String, Map<String,String>> allSheetValue = new HashMap<String, Map<String,String>>();
+		try {
+			Workbook workbook = WorkbookFactory.create(in);
+			Sheet sheet = null;
+			for (int i = 0; i < workbook.getNumberOfSheets(); i++) {// 获取每个Sheet表
+				sheet = (Sheet) workbook.getSheetAt(i);
+				String name  = sheet.getSheetName();
+				Map<String, String> map = new HashMap<String, String>();
+				int rowNum = sheet.getLastRowNum();
+				for(int j =0 ; j< rowNum ;j++){
+					Row row = sheet.getRow(j);
+					if (row != null) {
+						for (int k = 0; k < row.getLastCellNum(); k++) {// getLastCellNum，是获取最后一个不为空的列是第几个
+							if (row.getCell(k) != null) { // getCell 获取单元格数据
+								map.put(j+","+k, row.getCell(k).toString().replaceAll("\n", ""));
+							} else {
+								System.out.print("\t");
+							}
+						}
+					}
+				}
+				allSheetValue.put(name, map);
+				System.out.println("读取sheet表：" + name + " 完成");
+			}
+			in.close();
+		} catch (EncryptedDocumentException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (InvalidFormatException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return allSheetValue;
+		
+		
+		
+	
 	}
 }
